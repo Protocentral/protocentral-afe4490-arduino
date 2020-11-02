@@ -52,20 +52,22 @@ void setup()
 
 void loop()
 {   
-  afe44xx_output_values sensed_values;
-  boolean sampled_value = afe4490.get_data_if_available(&sensed_values,SPISTE);
+  afe44xx_output_values afe4490Data;
+  boolean sampled_value = afe4490.getDataIfAvailable(&afe4490Data,SPISTE);
+  
   if(sampled_value == true)
   {
-    if(sensed_values.spo2 == -999)
+    if(afe4490Data.spo2 == -999){
+     
       Serial.println("Probe error!!!!");
-    else
-    {  
+    }else{
+
       Serial.print("calculating sp02...");
       Serial.print(" Sp02 : ");
-      Serial.print(sensed_values.spo2);
+      Serial.print(afe4490Data.spo2);
       Serial.print("% ,"); 
       Serial.print("Pulse rate :");
-      Serial.print(sensed_values.heart_rate);                       
+      Serial.print(afe4490Data.heart_rate);                       
       Serial.println(" bpm");  
               
     }
