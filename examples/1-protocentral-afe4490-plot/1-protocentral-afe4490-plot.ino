@@ -34,21 +34,21 @@ AFE4490 afe4490;
 
 void sendDataThroughUart(afe44xx_output_values * afe4490Data){
   
-  DataPacket[0] = afe4490Data.seeg;
-  DataPacket[1] = afe4490Data.seeg>>8;
-  DataPacket[2] = afe4490Data.seeg>>16;
-  DataPacket[3] = afe4490Data.seeg>>24; 
+  DataPacket[0] = afe4490Data->seeg;
+  DataPacket[1] = afe4490Data->seeg>>8;
+  DataPacket[2] = afe4490Data->seeg>>16;
+  DataPacket[3] = afe4490Data->seeg>>24; 
  
-  DataPacket[4] = afe4490Data.seeg2;
-  DataPacket[5] = afe4490Data.seeg2>>8;
-  DataPacket[6] = afe4490Data.seeg2>>16;
-  DataPacket[7] = afe4490Data.seeg2>>24;
+  DataPacket[4] = afe4490Data->seeg2;
+  DataPacket[5] = afe4490Data->seeg2>>8;
+  DataPacket[6] = afe4490Data->seeg2>>16;
+  DataPacket[7] = afe4490Data->seeg2>>24;
 
-  if(afe4490Data.spo2 == -999){     //-999 is the error code.
+  if(afe4490Data->spo2 == -999){     //-999 is the error code.
     DataPacket[8] = 0;     
   }else{
-    DataPacket[8] = afe4490Data.spo2; 
-    DataPacket[9] = afe4490Data.heart_rate;
+    DataPacket[8] = afe4490Data->spo2; 
+    DataPacket[9] = afe4490Data->heart_rate;
   }  
 
   for(int i=0;i<5;i++){
@@ -62,7 +62,7 @@ void sendDataThroughUart(afe44xx_output_values * afe4490Data){
   for(int i=0; i<2; i++){ // transmit the data
     Serial.write(DataPacketFooter[i]);
   }
-  afe4490Data.calculated_value == false;
+  afe4490Data->calculated_value == false;
 }
 
 void setup()
