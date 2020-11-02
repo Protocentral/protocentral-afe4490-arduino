@@ -1,9 +1,12 @@
 ProtoCentral AF4490-based Pulse-oximeter shield for Arduino
 ================================
-[![Oximeter](https://www.protocentral.com/3782-thickbox_default/afe4490-pulse-oximeter-shield-kit-for-arduino.jpg)  
-*AFE4490 Pulse Oximeter Shield Kit for Arduino (PC-41234)*](https://www.protocentral.com/biomedical/996-afe4490-pulse-oximeter-shield-kit-for-arduino-642078949425.html)
+[![Oximeter](https://i2.wp.com/protocentral.com/wp-content/uploads/2020/10/4953.jpg?fit=629%2C600&ssl=1)  
+*AFE4490 Pulse Oximeter Shield Kit for Arduino ](https://protocentral.com/product/protocentral-afe4490-pulse-oximeter-shield-for-arduino-v2/)
 
-This pulse oximetry shield from ProtoCentral uses the AFE4490 IC to enble your Arduino to measure heart rate as well as SpO2 values.
+[![Oximeter](https://i1.wp.com/protocentral.com/wp-content/uploads/2020/10/4949.jpg?fit=689%2C628&ssl=1)  
+*AFE4490 Pulse Oximeter Breakout for Arduino ](https://protocentral.com/product/protocentral-afe4490-pulse-oximeter-breakout-board-kit/)
+
+This pulse oximetry shield/breakout from ProtoCentral uses the AFE4490 IC to enble your Arduino to measure heart rate as well as SpO2 values.
 Pulse oximetry is an indirect method of measuring the oxygen levels in the blood. The sensor measures the skin's absorbance of red and IR light wavelengths to calculate the oxygen levels. The measurement is done by a probe that clips on to a finger and contains emitters as well as a light sensor.
 Since the amount of blood flowing through any blood vessel varies (pulses) with the rate of blood from the heart, this can also be used for measuring heartrate without the need for connecting any ECG electrodes. 
 Used along with Brainbay, this shield can display the real-time PPG as well as heart-rate values in addition to SpO2.
