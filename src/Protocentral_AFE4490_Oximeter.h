@@ -1,18 +1,19 @@
 //////////////////////////////////////////////////////////////////////////////////////////
 //
-//   Arduino library for the AFE4490 Pulse Oxiometer Shield
+//    Arduino Library for the AFE4490 breakout board/shield from ProtoCentral Electronics
 //
-//   Copyright (c) 2018 ProtoCentral
+//    Author: Joice Tm
+//    Copyright (c) 2020 ProtoCentral
 //
-//   This software is licensed under the MIT License(http://opensource.org/licenses/MIT).
 //
-//   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
-//   NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-//   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-//   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-//   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//    This software is licensed under the MIT License(http://opensource.org/licenses/MIT).
 //
-//   For information on how to use, visit https://github.com/Protocentral/protocentral-afe4490-arduino
+//    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+//    NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+//    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+//    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
 /////////////////////////////////////////////////////////////////////////////////////////
 
 #ifndef _AFE4490_H
