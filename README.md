@@ -54,8 +54,12 @@ Wiring the Breakout to your Arduino
 | PD_ALM           | NC                   |  PD sensor fault indicator  |
 | VCC              | +5v                  |  Supply voltage             |
 
-Using Processing - Data Visualization Software (New!)
------------------------------------------------------
+**NEW: This is now compatible with the [ProtoCentral OpenView](https://github.com/Protocentral/protocentral_openview) unified data visualization software.**
+
+
+
+Using Processing - Data Visualization Software
+--------------------------------------------- 
  Processing is a data visualization software, in existence since 2001, used by artists and scientists alike. It’s an open source coding framework based on Java. If you are familiar with the Arduino environment, the Processing IDE is similar and you won’t have much of a learning curve to climb!
  
  The following are the steps to run the code:
