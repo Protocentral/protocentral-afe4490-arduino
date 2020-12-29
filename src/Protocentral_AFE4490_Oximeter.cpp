@@ -126,16 +126,16 @@ boolean AFE4490 :: getDataIfAvailable (afe44xx_output_values *sensed_values,cons
   if (afe44xx_data_ready == true)
   {
     IRtemp = (unsigned long) (IRtemp << 10);
-    sensed_values->seeg = (signed long) (IRtemp);
-    sensed_values->seeg = (signed long) ((sensed_values->seeg) >> 10);
+    sensed_values->ir = (signed long) (IRtemp);
+    sensed_values->ir = (signed long) ((sensed_values->ir) >> 10);
     REDtemp = (unsigned long) (REDtemp << 10);
-    sensed_values->seeg2 = (signed long) (REDtemp);
-    sensed_values->seeg2 = (signed long) ((sensed_values->seeg2) >> 10);
+    sensed_values->red = (signed long) (REDtemp);
+    sensed_values->red = (signed long) ((sensed_values->red) >> 10);
 
     if (dec == 20)
     {
-      aun_ir_buffer[n_buffer_count] = (uint16_t) ((sensed_values->seeg) >> 4);
-      aun_red_buffer[n_buffer_count] = (uint16_t) ((sensed_values->seeg2) >> 4);
+      aun_ir_buffer[n_buffer_count] = (uint16_t) ((sensed_values->ir) >> 4);
+      aun_red_buffer[n_buffer_count] = (uint16_t) ((sensed_values->red) >> 4);
       n_buffer_count++;
       dec = 0;
     }

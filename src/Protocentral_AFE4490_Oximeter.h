@@ -90,8 +90,8 @@
 typedef struct output_values{
   int32_t heart_rate;
   int32_t spo2;
-  signed long seeg;
-  signed long seeg2;
+  signed long ir;
+  signed long red;
   boolean calculated_value = false;
 }afe44xx_output_values;
 
