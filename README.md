@@ -4,31 +4,9 @@ ProtoCentral AF4490-based Pulse-oximeter shield for Arduino
 *AFE4490 Pulse Oximeter Shield Kit for Arduino ](https://protocentral.com/product/protocentral-afe4490-pulse-oximeter-shield-for-arduino-v2/)
 
 [![Oximeter](https://i1.wp.com/protocentral.com/wp-content/uploads/2020/10/4949.jpg?fit=689%2C628&ssl=1)  
-*AFE4490 Pulse Oximeter Breakout for Arduino ](https://protocentral.com/product/protocentral-afe4490-pulse-oximeter-breakout-board-kit/)
+*Don't have it yet? Buy one here: protocentral-afe4490-pulse-oximeter-breakout-board-kit* ](https://protocentral.com/product/protocentral-afe4490-pulse-oximeter-breakout-board-kit/)
 
-This pulse oximetry shield/breakout from ProtoCentral uses the AFE4490 IC to enble your Arduino to measure heart rate as well as SpO2 values.
-Pulse oximetry is an indirect method of measuring the oxygen levels in the blood. The sensor measures the skin's absorbance of red and IR light wavelengths to calculate the oxygen levels. The measurement is done by a probe that clips on to a finger and contains emitters as well as a light sensor.
-Since the amount of blood flowing through any blood vessel varies (pulses) with the rate of blood from the heart, this can also be used for measuring heartrate without the need for connecting any ECG electrodes. 
-Used along with Brainbay, this shield can display the real-time PPG as well as heart-rate values in addition to SpO2.
-
-Features:
-* TI AFE4490 Single chip pulse pulsoximetry front-end IC
-* Standard Nellcor compatible DB7 connector for probe
-* Calculates Spo2 values with provided code
-* Real-time display of PPG (Photoplethysmogram)
-
-Includes:
-----------
-* 1x ProtoCentral Pulse Oximetry shield for Arduino
-* 1x Set of stackable Arduino headers
-* 1x "Nellcor compatible" Pulse oximetry finger probe. 
-
-Repository Contents
--------------------
-* **/arduino** - Arduino library and example sketch
-* **/hardware** - All Eagle design files (.brd, .sch)
-* **/extras** - datasheets and extras
-* **/processing** - Processing-based Application
+This is the Arduino library for the ProtoCentral afe4490  breakout/shield boards.
 
 Connecting the shield to your Arduino
 -------------------------------------
@@ -38,7 +16,7 @@ Connecting the shield to your Arduino
 Wiring the Breakout to your Arduino
 ------------------------------------
  If you have bought the breakout the connection with the Arduino board is as follows:
- 
+
 |AFE4490 pin label| Arduino Connection   |Pin Function                  |
 |----------------- |:--------------------:|-----------------:           |
 | GND              | Gnd                  |  Gnd                        |             
@@ -59,12 +37,12 @@ Wiring the Breakout to your Arduino
 
 
 Using Processing - Data Visualization Software
---------------------------------------------- 
+---------------------------------------------
  Processing is a data visualization software, in existence since 2001, used by artists and scientists alike. It’s an open source coding framework based on Java. If you are familiar with the Arduino environment, the Processing IDE is similar and you won’t have much of a learning curve to climb!
- 
+
  The following are the steps to run the code:
 
-### 1. Download and Install Processing 
+### 1. Download and Install Processing
 
  Download the processing ide latest version from the link
 
@@ -84,37 +62,16 @@ Once downloaded, unzip the archive and install the app as per your OS.
 * On MAC: /Users/your_user_name/Documents/Processing/
 * On Linux: /Home/your_user_name/sketchbook/
 
-**Note:** This directory appears as "Processing" on Windows/Mac, and goes by the name "Sketchbook" on Linux. Create a subdirectory by name "libraries" if one doesn't exist already.
+###  Running the Arduino Sketch
 
- d. From the above mentioned "AFE4490_Oximeter-master" directory Copy/Move the contents of the AFE4490_Oximeter-master/processing/openview_pulseox folder to the Processing sketchbook directory which is also mentioned above (Locate the Processing sketchbook)
+Install the protoCentral afe4490 library from arduino library manager.
+If you have correctly installed the libraries, the example sketeches should now be available from within Arduino.
 
- e. Finally, copy the G4P directories from AFE4490_Oximeter-master\Processing\libraries and paste them into the libraries directory of your Processing sketchbook.
+Upload the code to your arduino and open [ProtoCentral-openview](https://github.com/Protocentral/protocentral_openview) GUI/Arduino plotter to view the output.
 
- f. You are all set now to get your first PPG wave form and SpO2 reading visualized from the AFE4490 Oximeter Shield!
+## For the main documentation site, GUI and more resources, please check out our main [GitHub Repo](https://github.com/Protocentral/AFE4490_Oximeter)
 
-### 3. Uploading Arduino Sketch For AFE4490 Oximeter Shield
 
- a. Open the Arduino IDE to load the embedded code for AFE4490 Oximeter Shield.
-
- b. Click on File -> Open and Browse the .ino code for Arduino from AFE4490_Oximeter-master\arduino and export the application to Arduino.
-
-### 4. Open Processing & launch the ces_view_oximeter
-
- a. If Processing IDE was open, close it and reopen to refresh the libraries and sketches. The repositories are not refreshed if the IDE was open while the Sketches and Libraries were being updated.
-
- b. Double-click any of the .pde files in the openview_pulseox directory to open all of the pulse oximeter code in the Processing IDE.
-
- c. If everything done so far was good, clicking the "run" button on the top left corner of the IDE, should run the code! If it does not, make sure you installed your libraries correctly.
-
- d. Once the GUI is running, select the port connect with pulse oximeter shield from the "SELECT PORT" dropdown as shown in the figure below
-
-![Port Selection](https://github.com/Protocentral/AFE4400_Oximeter/blob/master/Processing/Final%20Output/Port-Selection.png)
-
- e. Once the port selection is appropriate the START button gets enabled. Click "START" to initiate visualization
-
- f. You should see the PPG ( RED and IR) waves generated with the values obtained from the AFE4490 Oximeter Shield Breakout Board as shown below.
-
-![PPG Wave Form in Processing](https://github.com/Protocentral/AFE4490_Oximeter/blob/master/Processing/Final%20Output/output.gif)
 
 License Information
 ===================
@@ -147,4 +104,3 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 
 Please check [*LICENSE.md*](LICENSE.md) for detailed license descriptions.
-
