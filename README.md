@@ -35,33 +35,6 @@ Wiring the Breakout to your Arduino
 **NEW: This is now compatible with the [ProtoCentral OpenView](https://github.com/Protocentral/protocentral_openview) unified data visualization software.**
 
 
-
-Using Processing - Data Visualization Software
----------------------------------------------
- Processing is a data visualization software, in existence since 2001, used by artists and scientists alike. It’s an open source coding framework based on Java. If you are familiar with the Arduino environment, the Processing IDE is similar and you won’t have much of a learning curve to climb!
-
- The following are the steps to run the code:
-
-### 1. Download and Install Processing
-
- Download the processing ide latest version from the link
-
-* [Download Processing for your OS] (http://download.processing.org/)
-
-Once downloaded, unzip the archive and install the app as per your OS.
-
-### 2. Download the Processing code for Pulse Oximeter visualization
-
- a. Download the necessary files & directories or clone to your desktop from GitHub.
-
- b. Unzipping the archive should make a folder by name AFE4490 Oximeter Shield that contains the visualization code.
-
- c. Locate the Processing sketchbook directory on your computer. This should have been created automatically when you installed processing. Depending on your operating system, the path will be as follows:
-
-* On Windows: c:/My Documents/Processing/
-* On MAC: /Users/your_user_name/Documents/Processing/
-* On Linux: /Home/your_user_name/sketchbook/
-
 ###  Running the Arduino Sketch
 
 Install the protoCentral afe4490 library from arduino library manager.
