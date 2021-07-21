@@ -115,7 +115,7 @@ boolean AFE4490 :: getDataIfAvailable (afe44xx_output_values *sensed_values,cons
 {
   if (drdy_trigger )
   {
-    detachInterrupt(0);
+    detachInterrupt(intrrpt_num);
     afe44xxWrite(CONTROL0, 0x000001,pin);
     IRtemp = afe44xxRead(LED1VAL,pin);
     afe44xxWrite(CONTROL0, 0x000001,pin);
@@ -155,7 +155,7 @@ boolean AFE4490 :: getDataIfAvailable (afe44xx_output_values *sensed_values,cons
     sensed_values->calculated_value = true;
     afe44xx_data_ready = false;
     drdy_trigger = false;
-    attachInterrupt(0, afe44xx_drdy_event, RISING ); 
+    attachInterrupt(intrrpt_num, afe44xx_drdy_event, RISING ); 
 
   }else{
 
@@ -164,44 +164,57 @@ boolean AFE4490 :: getDataIfAvailable (afe44xx_output_values *sensed_values,cons
 }
 
 
-void AFE4490 :: afe44xxInit (const int pin)
+void AFE4490 :: afe44xxInit (const int cs_pin, const int drdy, const int interrupt_num, const int pwdn )
 {
-  afe44xxWrite(CONTROL0, 0x000000,pin);
-  afe44xxWrite(CONTROL0, 0x000008,pin);
-  afe44xxWrite(TIAGAIN, 0x000000,pin); // CF = 5pF, RF = 500kR
-  afe44xxWrite(TIA_AMB_GAIN, 0x000001,pin);
-  afe44xxWrite(LEDCNTRL, 0x001414,pin);
-  afe44xxWrite(CONTROL2, 0x000000,pin); // LED_RANGE=100mA, LED=50mA
-  afe44xxWrite(CONTROL1, 0x010707,pin); // Timers ON, average 3 samples
-  afe44xxWrite(PRPCOUNT, 0X001F3F,pin);
-  afe44xxWrite(LED2STC, 0X001770,pin);
-  afe44xxWrite(LED2ENDC, 0X001F3E,pin);
-  afe44xxWrite(LED2LEDSTC, 0X001770,pin);
-  afe44xxWrite(LED2LEDENDC, 0X001F3F,pin);
-  afe44xxWrite(ALED2STC, 0X000000,pin);
-  afe44xxWrite(ALED2ENDC, 0X0007CE,pin);
-  afe44xxWrite(LED2CONVST, 0X000002,pin);
-  afe44xxWrite(LED2CONVEND, 0X0007CF,pin);
-  afe44xxWrite(ALED2CONVST, 0X0007D2,pin);
-  afe44xxWrite(ALED2CONVEND, 0X000F9F,pin);
-  afe44xxWrite(LED1STC, 0X0007D0,pin);
-  afe44xxWrite(LED1ENDC, 0X000F9E,pin);
-  afe44xxWrite(LED1LEDSTC, 0X0007D0,pin);
-  afe44xxWrite(LED1LEDENDC, 0X000F9F,pin);
-  afe44xxWrite(ALED1STC, 0X000FA0,pin);
-  afe44xxWrite(ALED1ENDC, 0X00176E,pin);
-  afe44xxWrite(LED1CONVST, 0X000FA2,pin);
-  afe44xxWrite(LED1CONVEND, 0X00176F,pin);
-  afe44xxWrite(ALED1CONVST, 0X001772,pin);
-  afe44xxWrite(ALED1CONVEND, 0X001F3F,pin);
-  afe44xxWrite(ADCRSTCNT0, 0X000000,pin);
-  afe44xxWrite(ADCRSTENDCT0, 0X000000,pin);
-  afe44xxWrite(ADCRSTCNT1, 0X0007D0,pin);
-  afe44xxWrite(ADCRSTENDCT1, 0X0007D0,pin);
-  afe44xxWrite(ADCRSTCNT2, 0X000FA0,pin);
-  afe44xxWrite(ADCRSTENDCT2, 0X000FA0,pin);
-  afe44xxWrite(ADCRSTCNT3, 0X001770,pin);
-  afe44xxWrite(ADCRSTENDCT3, 0X001770,pin);
+  pinMode (cs_pin,OUTPUT);//Slave Select
+  pinMode (pwdn,OUTPUT);
+  pinMode (drdy,INPUT);// data ready
+
+  intrrpt_num = interrupt_num;
+  attachInterrupt(intrrpt_num, afe44xx_drdy_event, RISING );
+
+  digitalWrite(pwdn, LOW);
+  delay(500);
+  digitalWrite(pwdn, HIGH);
+  delay(500);
+
+  afe44xxWrite(CONTROL0, 0x000000,cs_pin);
+  afe44xxWrite(CONTROL0, 0x000008,cs_pin);
+  afe44xxWrite(TIAGAIN, 0x000000,cs_pin); // CF = 5pF, RF = 500kR
+  afe44xxWrite(TIA_AMB_GAIN, 0x000001,cs_pin);
+  afe44xxWrite(LEDCNTRL, 0x001414,cs_pin);
+  afe44xxWrite(CONTROL2, 0x000000,cs_pin); // LED_RANGE=100mA, LED=50mA
+  afe44xxWrite(CONTROL1, 0x010707,cs_pin); // Timers ON, average 3 samples
+  afe44xxWrite(PRPCOUNT, 0X001F3F,cs_pin);
+  afe44xxWrite(LED2STC, 0X001770,cs_pin);
+  afe44xxWrite(LED2ENDC, 0X001F3E,cs_pin);
+  afe44xxWrite(LED2LEDSTC, 0X001770,cs_pin);
+  afe44xxWrite(LED2LEDENDC, 0X001F3F,cs_pin);
+  afe44xxWrite(ALED2STC, 0X000000,cs_pin);
+  afe44xxWrite(ALED2ENDC, 0X0007CE,cs_pin);
+  afe44xxWrite(LED2CONVST, 0X000002,cs_pin);
+  afe44xxWrite(LED2CONVEND, 0X0007CF,cs_pin);
+  afe44xxWrite(ALED2CONVST, 0X0007D2,cs_pin);
+  afe44xxWrite(ALED2CONVEND, 0X000F9F,cs_pin);
+  afe44xxWrite(LED1STC, 0X0007D0,cs_pin);
+  afe44xxWrite(LED1ENDC, 0X000F9E,cs_pin);
+  afe44xxWrite(LED1LEDSTC, 0X0007D0,cs_pin);
+  afe44xxWrite(LED1LEDENDC, 0X000F9F,cs_pin);
+  afe44xxWrite(ALED1STC, 0X000FA0,cs_pin);
+  afe44xxWrite(ALED1ENDC, 0X00176E,cs_pin);
+  afe44xxWrite(LED1CONVST, 0X000FA2,cs_pin);
+  afe44xxWrite(LED1CONVEND, 0X00176F,cs_pin);
+  afe44xxWrite(ALED1CONVST, 0X001772,cs_pin);
+  afe44xxWrite(ALED1CONVEND, 0X001F3F,cs_pin);
+  afe44xxWrite(ADCRSTCNT0, 0X000000,cs_pin);
+  afe44xxWrite(ADCRSTENDCT0, 0X000000,cs_pin);
+  afe44xxWrite(ADCRSTCNT1, 0X0007D0,cs_pin);
+  afe44xxWrite(ADCRSTENDCT1, 0X0007D0,cs_pin);
+  afe44xxWrite(ADCRSTCNT2, 0X000FA0,cs_pin);
+  afe44xxWrite(ADCRSTENDCT2, 0X000FA0,cs_pin);
+  afe44xxWrite(ADCRSTCNT3, 0X001770,cs_pin);
+  afe44xxWrite(ADCRSTENDCT3, 0X001770,cs_pin);
+
   delay(1000);
 }
 

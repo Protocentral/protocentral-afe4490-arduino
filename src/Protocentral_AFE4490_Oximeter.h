@@ -101,9 +101,11 @@ class AFE4490
 {
   public:
     void afe44xxInit (const int pin);
+    void afe44xxInit  (const int cs_pin, const int drdy, const int interrupt_num, const int pwdn );
     boolean getDataIfAvailable (afe44xx_output_values *sensed_values,const int pin);  
     
   private:
+    char intrrpt_num=0;
     void afe44xxWrite (uint8_t address, uint32_t data,const int pin);
     void estimate_spo2(uint16_t *pun_ir_buffer, int32_t n_ir_buffer_length, uint16_t *pun_red_buffer, int32_t *pn_spo2, int8_t *pch_spo2_valid, int32_t *pn_heart_rate, int8_t *pch_hr_valid);
     void find_peak( int32_t *pn_locs, int32_t *n_npks,  int32_t  *pn_x, int32_t n_size, int32_t n_min_height, int32_t n_min_distance, int32_t n_max_num );

@@ -1,10 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////
 //
-//    Arduino library for the AFE4490 Pulse Oxiometer Shield
 //
-//    Copyright (c) 2018 ProtoCentral
-//
-//    This example will plot the PPG signal through Arduino-plotter
+//    This example is for the new Open-Ox board.
 //
 //    This software is licensed under the MIT License(http://opensource.org/licenses/MIT).
 //
@@ -21,10 +18,9 @@
 #include <SPI.h>
 #include "Protocentral_AFE4490_Oximeter.h"
 
-const int SPISTE = 7; // chip select
-const int SPIDRDY = 2; // data ready pin
+const int SPISTE = 25; // chip select
+const int SPIDRDY = 13; // data ready pin
 const int PWDN =4;
-const int DRDY_INTNUM =0;   //digital pin2 interrupt num = 0. Please pass correct interrupt number if you are using any boards otherthan arduino uno
 
 AFE4490 afe4490;
 
@@ -40,8 +36,7 @@ void setup()
   SPI.setDataMode (SPI_MODE0);          //Set SPI mode as 0
   SPI.setBitOrder (MSBFIRST);           //MSB first
 
-  //NOTE: usually the DRDY_INTNUM is same as the pin but the interrupt number for arduino uno pin2 is 0.
-  afe4490.afe44xxInit (SPISTE, SPIDRDY, DRDY_INTNUM, PWDN);
+  afe4490.afe44xxInit (SPISTE, SPIDRDY, SPIDRDY, PWDN);
   Serial.println("intilazition done");
 }
 

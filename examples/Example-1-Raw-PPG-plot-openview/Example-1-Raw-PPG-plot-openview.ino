@@ -24,14 +24,14 @@
 
 const int SPISTE = 7; // chip select
 const int SPIDRDY = 2; // data ready pin
-const int RESET =5; // data ready pin
-const int PWDN =4; // data ready pin
+const int PWDN =4;
+const int DRDY_INTNUM =0;   //digital pin2 interrupt num = 0. Please pass correct interrupt number if you are using any boards otherthan arduino uno
 
 int datalen = 10;
 
 volatile char DataPacket[10];
-volatile char DataPacketFooter[2];
-volatile char DataPacketHeader[6];
+volatile char DataPacketFooter[2]={0x00, CES_CMDIF_PKT_STOP};
+const char DataPacketHeader[6] = {CES_CMDIF_PKT_START_1, CES_CMDIF_PKT_START_2, datalen, ((uint8_t)(datalen >> 8)), CES_CMDIF_TYPE_DATA};
 
 AFE4490 afe4490;
 
@@ -71,33 +71,17 @@ void sendDataThroughUart(afe44xx_output_values * afe4490Data){
 void setup()
 {
   Serial.begin(57600);
-  Serial.println("Intilazition AFE44xx.. ");
+  Serial.println("Intilaziting AFE44xx.. ");
 
   delay(2000) ;   // pause for a moment
 
   SPI.begin();
-
-  // set the directions
-  pinMode (SPISTE,OUTPUT);//Slave Select
-  pinMode (SPIDRDY,INPUT);// data ready
-
-  attachInterrupt(0, afe44xx_drdy_event, RISING ); // Digital2 is attached to Data ready pin of AFE is interrupt0 in ARduino
-  // set SPI transmission
   SPI.setClockDivider (SPI_CLOCK_DIV8); // set Speed as 2MHz , 16MHz/ClockDiv
   SPI.setDataMode (SPI_MODE0);          //Set SPI mode as 0
   SPI.setBitOrder (MSBFIRST);           //MSB first
 
-  //Packet structure
-  DataPacketHeader[0] = CES_CMDIF_PKT_START_1;  //packet header1 0x0A
-  DataPacketHeader[1] = CES_CMDIF_PKT_START_2;  //packet header2 0xFA
-  DataPacketHeader[2] = datalen;                // data length 9
-  DataPacketHeader[3] = (uint8_t)(datalen >> 8);
-  DataPacketHeader[4] = CES_CMDIF_TYPE_DATA;
-  DataPacketFooter[0] = 0x00;
-  DataPacketFooter[1] = CES_CMDIF_PKT_STOP;
-
-  afe4490.afe44xxInit (SPISTE);
-  Serial.println("intilazition is done");
+  afe4490.afe44xxInit (SPISTE, SPIDRDY, DRDY_INTNUM, PWDN);
+  Serial.println("intilazition done");
 }
 
 void loop()
