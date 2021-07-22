@@ -1,6 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////////////////
 //
-//
 //    This example is for the new Open-Ox board.
 //
 //    This software is licensed under the MIT License(http://opensource.org/licenses/MIT).
