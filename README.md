@@ -1,5 +1,7 @@
 ProtoCentral AF4490-based Pulse-oximeter shield for Arduino
 ================================
+[![Compile Examples](https://github.com/Protocentral/protocentral-afe4490-arduino/workflows/Compile%20Examples/badge.svg)](https://github.com/Protocentral/protocentral-afe4490-arduino/actions?workflow=Compile+Examples)
+
 [![Oximeter](https://i2.wp.com/protocentral.com/wp-content/uploads/2020/10/4953.jpg?fit=629%2C600&ssl=1)  
 *AFE4490 Pulse Oximeter Shield Kit for Arduino ](https://protocentral.com/product/protocentral-afe4490-pulse-oximeter-shield-for-arduino-v2/)
 
