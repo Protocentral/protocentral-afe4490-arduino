@@ -16,56 +16,56 @@
 /////////////////////////////////////////////////////////////////////////////////////////
 
 #include <SPI.h>
-#include "Protocentral_AFE4490_Oximeter.h"
+#include "protocentral_afe44xx.h"
 
-const int SPISTE = 7; // chip select
-const int SPIDRDY = 2; // data ready pin
-const int PWDN =4;
-const int DRDY_INTNUM =0;   //digital pin2 interrupt num = 0. Please pass correct interrupt number if you are using any boards otherthan arduino uno
+#define AFE44XX_CS_PIN   7
+#define AFE44XX_DRDY_PIN 2
+#define AFE44XX_PWDN_PIN 4
+#define AFE44XX_INTNUM   0
 
-AFE4490 afe4490;
+AFE44XX afe44xx(AFE44XX_CS_PIN, AFE44XX_PWDN_PIN, AFE44XX_DRDY_PIN, AFE44XX_INTNUM);
 
 int32_t heart_rate_prev=0;
 int32_t spo2_prev=0;
 
 void setup()
 {
-   Serial.begin(57600);
-   Serial.println("Intilaziting AFE44xx.. ");
+    Serial.begin(57600);
+    Serial.println("Intilaziting AFE44xx.. ");
 
-   delay(2000) ;   // pause for a moment
+    delay(2000) ;   // pause for a moment
 
-   SPI.begin();
-   SPI.setClockDivider (SPI_CLOCK_DIV8); // set Speed as 2MHz , 16MHz/ClockDiv
-   SPI.setDataMode (SPI_MODE0);          //Set SPI mode as 0
-   SPI.setBitOrder (MSBFIRST);           //MSB first
+    SPI.begin();
+   //SPI.setClockDivider (SPI_CLOCK_DIV8); // set Speed as 2MHz , 16MHz/ClockDiv
+   //SPI.setDataMode (SPI_MODE0);          //Set SPI mode as 0
+   //SPI.setBitOrder (MSBFIRST);           //MSB first
 
-   afe4490.afe44xxInit (SPISTE, SPIDRDY, DRDY_INTNUM, PWDN);
-   Serial.println("intilazition is done");
+    afe44xx.afe44xx_init();
+    Serial.println("Init complete");
 }
 
 void loop()
 {
-  afe44xx_output_values afe4490Data;
-  boolean sampled_value = afe4490.getDataIfAvailable(&afe4490Data,SPISTE);
+    afe44xx_output_values afe44xxData;
+    boolean sampled_value = afe44xx.getDataIfAvailable(&afe44xxData);
 
-  if(sampled_value == true)
-  {
-    if(afe4490Data.spo2 == -999){
+    if(sampled_value == true)
+    {
+      if(afe44xxData.spo2 == -999){
 
-      Serial.println("Probe error!!!!");
-    }else if ((heart_rate_prev != afe4490Data.heart_rate) || (spo2_prev != afe4490Data.spo2)){
+        Serial.println("Probe error!!!!");
+      }else if ((heart_rate_prev != afe44xxData.heart_rate) || (spo2_prev != afe44xxData.spo2)){
 
-      heart_rate_prev = afe4490Data.heart_rate;
-      spo2_prev = afe4490Data.spo2;
+        heart_rate_prev = afe44xxData.heart_rate;
+        spo2_prev = afe44xxData.spo2;
 
-      Serial.print("calculating sp02...");
-      Serial.print(" Sp02 : ");
-      Serial.print(afe4490Data.spo2);
-      Serial.print("% ,");
-      Serial.print("Pulse rate :");
-      Serial.print(afe4490Data.heart_rate);
-      Serial.println(" bpm");
+        Serial.print("calculating sp02...");
+        Serial.print(" Sp02 : ");
+        Serial.print(afe44xxData.spo2);
+        Serial.print("% ,");
+        Serial.print("Pulse rate :");
+        Serial.print(afe44xxData.heart_rate);
+        Serial.println(" bpm");
+      }
     }
-  }
 }

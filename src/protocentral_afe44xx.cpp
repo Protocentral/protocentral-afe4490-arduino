@@ -111,13 +111,16 @@ const uint8_t uch_spo2_table[184]={ 95, 95, 95, 96, 96, 96, 97, 97, 97, 97, 97, 
 AFE44XX::AFE44XX(int cs_pin, int pwdn_pin, int drdy_pin, int intr_num)
 {
     _cs_pin=cs_pin;
+    _drdy_pin=drdy_pin;
+
     pinMode(_cs_pin, OUTPUT);
     digitalWrite(_cs_pin,HIGH);
 
     pinMode (pwdn_pin,OUTPUT);
     pinMode (drdy_pin,INPUT);// data ready
 
-    //intrrpt_num = interrupt_num;
+    intrrpt_num = intr_num;
+    attachInterrupt(digitalPinToInterrupt(_drdy_pin), afe44xx_drdy_event, RISING );
     //attachInterrupt(intrrpt_num, afe44xx_drdy_event, RISING );
 
     digitalWrite(pwdn_pin, LOW);
@@ -135,7 +138,8 @@ boolean AFE44XX :: getDataIfAvailable (afe44xx_output_values *sensed_values)
 {
   if (drdy_trigger )
   {
-    detachInterrupt(intrrpt_num);
+    //detachInterrupt(intrrpt_num);
+    detachInterrupt(digitalPinToInterrupt(_drdy_pin));
     afe44xxWrite(CONTROL0, 0x000001);
     IRtemp = afe44xxRead(LED1VAL);
     afe44xxWrite(CONTROL0, 0x000001);
@@ -175,7 +179,7 @@ boolean AFE44XX :: getDataIfAvailable (afe44xx_output_values *sensed_values)
     sensed_values->calculated_value = true;
     afe44xx_data_ready = false;
     drdy_trigger = false;
-    attachInterrupt(intrrpt_num, afe44xx_drdy_event, RISING ); 
+    attachInterrupt(digitalPinToInterrupt(_drdy_pin), afe44xx_drdy_event, RISING ); 
 
   }else{
 

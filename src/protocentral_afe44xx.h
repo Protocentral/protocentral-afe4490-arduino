@@ -118,7 +118,7 @@ class AFE44XX
     int _cs_pin;
     int _pwdn_pin;
     int _drdy_pin;
-    char intrrpt_num=0;
+    //char intrrpt_num=0;
 
 };
 
