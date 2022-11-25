@@ -26,7 +26,7 @@
 #define CES_CMDIF_TYPE_DATA   0x02
 #define CES_CMDIF_PKT_STOP    0x0B
 
-AFE44XX afe44xx(AFE44XX_CS_PIN, AFE44XX_PWDN_PIN, AFE44XX_DRDY_PIN);
+AFE44XX afe44xx(AFE44XX_CS_PIN, AFE44XX_PWDN_PIN);
 
 afe44xx_data afe44xx_raw_data;
 uint8_t ppg_data_buff[20];

@@ -46,7 +46,7 @@ void setup()
 
 void loop()
 {
-    afe44xx_output_values afe44xxData;
+    /*afe44xx_output_values afe44xxData;
     boolean sampled_value = afe44xx.getDataIfAvailable(&afe44xxData);
 
     if(sampled_value == true)
@@ -68,4 +68,5 @@ void loop()
         Serial.println(" bpm");
       }
     }
+    */
 }
