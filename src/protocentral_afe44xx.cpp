@@ -119,7 +119,7 @@ AFE44XX::AFE44XX(int cs_pin, int pwdn_pin, int drdy_pin, int intr_num)
     pinMode (pwdn_pin,OUTPUT);
     pinMode (drdy_pin,INPUT);// data ready
 
-    intrrpt_num = intr_num;
+    //intrrpt_num = intr_num;
     attachInterrupt(digitalPinToInterrupt(_drdy_pin), afe44xx_drdy_event, RISING );
     //attachInterrupt(intrrpt_num, afe44xx_drdy_event, RISING );
 
