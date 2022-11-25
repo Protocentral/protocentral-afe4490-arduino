@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////////////////
 //
-//    Arduino Library for the AFE4490 breakout board/shield from ProtoCentral Electronics
+//    Arduino Library for the AFE44XX breakout board/shield from ProtoCentral Electronics
 //
 //    Author: Joice Tm
 //    Copyright (c) 2020 ProtoCentral
@@ -77,7 +77,11 @@
 *******************************************************************************
 */
 
-#include "Protocentral_AFE4490_Oximeter.h"
+
+#include "protocentral_afe44xx.h"
+
+#define AFE44XX_SPI_SPEED 2000000
+SPISettings SPI_SETTINGS(AFE44XX_SPI_SPEED, MSBFIRST, SPI_MODE0); 
 
 static  int32_t an_x[ BUFFER_SIZE]; 
 static  int32_t an_y[ BUFFER_SIZE]; 
@@ -93,7 +97,6 @@ int8_t  ch_hr_valid;  //indicator to show if the heart rate calculation is valid
 uint16_t aun_ir_buffer[100]; //infrared LED sensor data
 uint16_t aun_red_buffer[100];  //red LED sensor data
 
-
 const uint8_t uch_spo2_table[184]={ 95, 95, 95, 96, 96, 96, 97, 97, 97, 97, 97, 98, 98, 98, 98, 98, 99, 99, 99, 99, 
               99, 99, 99, 99, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 
               100, 100, 100, 100, 99, 99, 99, 99, 99, 99, 99, 99, 98, 98, 98, 98, 98, 98, 97, 97, 
@@ -105,21 +108,38 @@ const uint8_t uch_spo2_table[184]={ 95, 95, 95, 96, 96, 96, 97, 97, 97, 97, 97, 
               28, 27, 26, 25, 23, 22, 21, 20, 19, 17, 16, 15, 14, 12, 11, 10, 9, 7, 6, 5, 
               3, 2, 1 } ;
 
+AFE44XX::AFE44XX(int cs_pin, int pwdn_pin, int drdy_pin, int intr_num)
+{
+    _cs_pin=cs_pin;
+    pinMode(_cs_pin, OUTPUT);
+    digitalWrite(_cs_pin,HIGH);
+
+    pinMode (pwdn_pin,OUTPUT);
+    pinMode (drdy_pin,INPUT);// data ready
+
+    //intrrpt_num = interrupt_num;
+    //attachInterrupt(intrrpt_num, afe44xx_drdy_event, RISING );
+
+    digitalWrite(pwdn_pin, LOW);
+    delay(500);
+    digitalWrite(pwdn_pin, HIGH);
+    delay(500);
+}
 
 void afe44xx_drdy_event()
 {
   drdy_trigger = true;
 }
 
-boolean AFE4490 :: getDataIfAvailable (afe44xx_output_values *sensed_values,const int pin)
+boolean AFE44XX :: getDataIfAvailable (afe44xx_output_values *sensed_values)
 {
   if (drdy_trigger )
   {
     detachInterrupt(intrrpt_num);
-    afe44xxWrite(CONTROL0, 0x000001,pin);
-    IRtemp = afe44xxRead(LED1VAL,pin);
-    afe44xxWrite(CONTROL0, 0x000001,pin);
-    REDtemp = afe44xxRead(LED2VAL,pin);
+    afe44xxWrite(CONTROL0, 0x000001);
+    IRtemp = afe44xxRead(LED1VAL);
+    afe44xxWrite(CONTROL0, 0x000001);
+    REDtemp = afe44xxRead(LED2VAL);
     afe44xx_data_ready = true;
   }
 
@@ -164,9 +184,9 @@ boolean AFE4490 :: getDataIfAvailable (afe44xx_output_values *sensed_values,cons
 }
 
 
-void AFE4490 :: afe44xxInit (const int cs_pin, const int drdy, const int interrupt_num, const int pwdn )
+void AFE44XX::afe44xx_init()
 {
-  pinMode (cs_pin,OUTPUT);//Slave Select
+  /*pinMode (cs_pin,OUTPUT);//Slave Select
   pinMode (pwdn,OUTPUT);
   pinMode (drdy,INPUT);// data ready
 
@@ -177,72 +197,80 @@ void AFE4490 :: afe44xxInit (const int cs_pin, const int drdy, const int interru
   delay(500);
   digitalWrite(pwdn, HIGH);
   delay(500);
+  */
 
-  afe44xxWrite(CONTROL0, 0x000000,cs_pin);
-  afe44xxWrite(CONTROL0, 0x000008,cs_pin);
-  afe44xxWrite(TIAGAIN, 0x000000,cs_pin); // CF = 5pF, RF = 500kR
-  afe44xxWrite(TIA_AMB_GAIN, 0x000001,cs_pin);
-  afe44xxWrite(LEDCNTRL, 0x001414,cs_pin);
-  afe44xxWrite(CONTROL2, 0x000000,cs_pin); // LED_RANGE=100mA, LED=50mA
-  afe44xxWrite(CONTROL1, 0x010707,cs_pin); // Timers ON, average 3 samples
-  afe44xxWrite(PRPCOUNT, 0X001F3F,cs_pin);
-  afe44xxWrite(LED2STC, 0X001770,cs_pin);
-  afe44xxWrite(LED2ENDC, 0X001F3E,cs_pin);
-  afe44xxWrite(LED2LEDSTC, 0X001770,cs_pin);
-  afe44xxWrite(LED2LEDENDC, 0X001F3F,cs_pin);
-  afe44xxWrite(ALED2STC, 0X000000,cs_pin);
-  afe44xxWrite(ALED2ENDC, 0X0007CE,cs_pin);
-  afe44xxWrite(LED2CONVST, 0X000002,cs_pin);
-  afe44xxWrite(LED2CONVEND, 0X0007CF,cs_pin);
-  afe44xxWrite(ALED2CONVST, 0X0007D2,cs_pin);
-  afe44xxWrite(ALED2CONVEND, 0X000F9F,cs_pin);
-  afe44xxWrite(LED1STC, 0X0007D0,cs_pin);
-  afe44xxWrite(LED1ENDC, 0X000F9E,cs_pin);
-  afe44xxWrite(LED1LEDSTC, 0X0007D0,cs_pin);
-  afe44xxWrite(LED1LEDENDC, 0X000F9F,cs_pin);
-  afe44xxWrite(ALED1STC, 0X000FA0,cs_pin);
-  afe44xxWrite(ALED1ENDC, 0X00176E,cs_pin);
-  afe44xxWrite(LED1CONVST, 0X000FA2,cs_pin);
-  afe44xxWrite(LED1CONVEND, 0X00176F,cs_pin);
-  afe44xxWrite(ALED1CONVST, 0X001772,cs_pin);
-  afe44xxWrite(ALED1CONVEND, 0X001F3F,cs_pin);
-  afe44xxWrite(ADCRSTCNT0, 0X000000,cs_pin);
-  afe44xxWrite(ADCRSTENDCT0, 0X000000,cs_pin);
-  afe44xxWrite(ADCRSTCNT1, 0X0007D0,cs_pin);
-  afe44xxWrite(ADCRSTENDCT1, 0X0007D0,cs_pin);
-  afe44xxWrite(ADCRSTCNT2, 0X000FA0,cs_pin);
-  afe44xxWrite(ADCRSTENDCT2, 0X000FA0,cs_pin);
-  afe44xxWrite(ADCRSTCNT3, 0X001770,cs_pin);
-  afe44xxWrite(ADCRSTENDCT3, 0X001770,cs_pin);
+  afe44xxWrite(CONTROL0, 0x000000);
+  afe44xxWrite(CONTROL0, 0x000008);
+  afe44xxWrite(TIAGAIN, 0x000000); // CF = 5pF, RF = 500kR
+  afe44xxWrite(TIA_AMB_GAIN, 0x000001);
+  afe44xxWrite(LEDCNTRL, 0x001414);
+  afe44xxWrite(CONTROL2, 0x000000); // LED_RANGE=100mA, LED=50mA
+  afe44xxWrite(CONTROL1, 0x010707); // Timers ON, average 3 samples
+  afe44xxWrite(PRPCOUNT, 0X001F3F);
+  afe44xxWrite(LED2STC, 0X001770);
+  afe44xxWrite(LED2ENDC, 0X001F3E);
+  afe44xxWrite(LED2LEDSTC, 0X001770);
+  afe44xxWrite(LED2LEDENDC, 0X001F3F);
+  afe44xxWrite(ALED2STC, 0X000000);
+  afe44xxWrite(ALED2ENDC, 0X0007CE);
+  afe44xxWrite(LED2CONVST, 0X000002);
+  afe44xxWrite(LED2CONVEND, 0X0007CF);
+  afe44xxWrite(ALED2CONVST, 0X0007D2);
+  afe44xxWrite(ALED2CONVEND, 0X000F9F);
+  afe44xxWrite(LED1STC, 0X0007D0);
+  afe44xxWrite(LED1ENDC, 0X000F9E);
+  afe44xxWrite(LED1LEDSTC, 0X0007D0);
+  afe44xxWrite(LED1LEDENDC, 0X000F9F);
+  afe44xxWrite(ALED1STC, 0X000FA0);
+  afe44xxWrite(ALED1ENDC, 0X00176E);
+  afe44xxWrite(LED1CONVST, 0X000FA2);
+  afe44xxWrite(LED1CONVEND, 0X00176F);
+  afe44xxWrite(ALED1CONVST, 0X001772);
+  afe44xxWrite(ALED1CONVEND, 0X001F3F);
+  afe44xxWrite(ADCRSTCNT0, 0X000000);
+  afe44xxWrite(ADCRSTENDCT0, 0X000000);
+  afe44xxWrite(ADCRSTCNT1, 0X0007D0);
+  afe44xxWrite(ADCRSTENDCT1, 0X0007D0);
+  afe44xxWrite(ADCRSTCNT2, 0X000FA0);
+  afe44xxWrite(ADCRSTENDCT2, 0X000FA0);
+  afe44xxWrite(ADCRSTCNT3, 0X001770);
+  afe44xxWrite(ADCRSTENDCT3, 0X001770);
 
   delay(1000);
 }
 
-void AFE4490 :: afe44xxWrite (uint8_t address, uint32_t data,const int pin)
+void AFE44XX :: afe44xxWrite (uint8_t address, uint32_t data)
 {
-  digitalWrite (pin, LOW); // enable device
+  SPI.beginTransaction(SPI_SETTINGS);
+  digitalWrite(_cs_pin, LOW);
+
   SPI.transfer (address); // send address to device
   SPI.transfer ((data >> 16) & 0xFF); // write top 8 bits
   SPI.transfer ((data >> 8) & 0xFF); // write middle 8 bits
   SPI.transfer (data & 0xFF); // write bottom 8 bits
-  digitalWrite (pin, HIGH); // disable device
+
+  digitalWrite (_cs_pin, HIGH); // disable device
+  SPI.endTransaction();
+
 }
 
-unsigned long AFE4490 :: afe44xxRead (uint8_t address,const int pin)
+unsigned long AFE44XX :: afe44xxRead (uint8_t address)
 {
   unsigned long data = 0;
-  digitalWrite (pin, LOW); // enable device
+  SPI.beginTransaction(SPI_SETTINGS);
+  digitalWrite(_cs_pin, LOW);
+
   SPI.transfer (address); // send address to device
   
   data |= ((unsigned long)SPI.transfer (0) << 16); // read top 8 bits data
   data |= ((unsigned long)SPI.transfer (0) << 8); // read middle 8 bits  data
   data |= SPI.transfer (0); // read bottom 8 bits data
-  digitalWrite (pin, HIGH); // disable device
-
+  digitalWrite (_cs_pin, HIGH); // disable device
+  SPI.endTransaction();
   return data; // return with 24 bits of read data
 }
 
-void AFE4490 :: estimate_spo2(uint16_t *pun_ir_buffer, int32_t n_ir_buffer_length, uint16_t *pun_red_buffer, int32_t *pn_spo2, int8_t *pch_spo2_valid, int32_t *pn_heart_rate, int8_t *pch_hr_valid)
+void AFE44XX :: estimate_spo2(uint16_t *pun_ir_buffer, int32_t n_ir_buffer_length, uint16_t *pun_red_buffer, int32_t *pn_spo2, int8_t *pch_spo2_valid, int32_t *pn_heart_rate, int8_t *pch_hr_valid)
 {
   uint32_t un_ir_mean,un_only_once ;
   int32_t k, n_i_ratio_count;
@@ -363,7 +391,7 @@ void AFE4490 :: estimate_spo2(uint16_t *pun_ir_buffer, int32_t n_ir_buffer_lengt
 }
 
 
-void AFE4490 :: find_peak( int32_t *pn_locs, int32_t *n_npks,  int32_t  *pn_x, int32_t n_size, int32_t n_min_height, int32_t n_min_distance, int32_t n_max_num )
+void AFE44XX :: find_peak( int32_t *pn_locs, int32_t *n_npks,  int32_t  *pn_x, int32_t n_size, int32_t n_min_height, int32_t n_min_distance, int32_t n_max_num )
 /**
   \brief        Find peaks
   \par          Details
@@ -377,7 +405,7 @@ void AFE4490 :: find_peak( int32_t *pn_locs, int32_t *n_npks,  int32_t  *pn_x, i
   *n_npks = min( *n_npks, n_max_num );
 }
 
-void AFE4490 :: find_peak_above( int32_t *pn_locs, int32_t *n_npks,  int32_t  *pn_x, int32_t n_size, int32_t n_min_height )
+void AFE44XX :: find_peak_above( int32_t *pn_locs, int32_t *n_npks,  int32_t  *pn_x, int32_t n_size, int32_t n_min_height )
 /**
   \brief        Find peaks above n_min_height
   \par          Details
@@ -408,7 +436,7 @@ void AFE4490 :: find_peak_above( int32_t *pn_locs, int32_t *n_npks,  int32_t  *p
   }
 }
 
-void AFE4490 :: remove_close_peaks(int32_t *pn_locs, int32_t *pn_npks, int32_t *pn_x, int32_t n_min_distance)
+void AFE44XX :: remove_close_peaks(int32_t *pn_locs, int32_t *pn_npks, int32_t *pn_x, int32_t n_min_distance)
 /**
   \brief        Remove peaks
   \par          Details
@@ -437,7 +465,7 @@ void AFE4490 :: remove_close_peaks(int32_t *pn_locs, int32_t *pn_npks, int32_t *
   sort_ascend( pn_locs, *pn_npks );
 }
 
-void AFE4490 :: sort_ascend(int32_t  *pn_x, int32_t n_size)
+void AFE44XX :: sort_ascend(int32_t  *pn_x, int32_t n_size)
 /**
   \brief        Sort array
   \par          Details
@@ -455,7 +483,7 @@ void AFE4490 :: sort_ascend(int32_t  *pn_x, int32_t n_size)
   }
 }
 
-void AFE4490 :: sort_indices_descend(  int32_t  *pn_x, int32_t *pn_indx, int32_t n_size)
+void AFE44XX :: sort_indices_descend(  int32_t  *pn_x, int32_t *pn_indx, int32_t n_size)
 /**
   \brief        Sort indices
   \par          Details

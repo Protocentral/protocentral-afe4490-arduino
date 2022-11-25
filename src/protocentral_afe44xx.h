@@ -97,23 +97,29 @@ typedef struct output_values{
 
 void afe44xx_drdy_event();
               
-class AFE4490
+class AFE44XX
 {
   public:
-    void afe44xxInit (const int pin);
-    void afe44xxInit  (const int cs_pin, const int drdy, const int interrupt_num, const int pwdn );
-    boolean getDataIfAvailable (afe44xx_output_values *sensed_values,const int pin);  
+    AFE44XX(int cs_pin, int pwdn_pin, int drdy_pin, int intr_num);
+    void afe44xx_init();
+    boolean getDataIfAvailable (afe44xx_output_values *sensed_values);  
     
   private:
-    char intrrpt_num=0;
-    void afe44xxWrite (uint8_t address, uint32_t data,const int pin);
+    
+    void afe44xxWrite (uint8_t address, uint32_t data);
     void estimate_spo2(uint16_t *pun_ir_buffer, int32_t n_ir_buffer_length, uint16_t *pun_red_buffer, int32_t *pn_spo2, int8_t *pch_spo2_valid, int32_t *pn_heart_rate, int8_t *pch_hr_valid);
     void find_peak( int32_t *pn_locs, int32_t *n_npks,  int32_t  *pn_x, int32_t n_size, int32_t n_min_height, int32_t n_min_distance, int32_t n_max_num );
     void find_peak_above( int32_t *pn_locs, int32_t *n_npks,  int32_t  *pn_x, int32_t n_size, int32_t n_min_height);
     void remove_close_peaks(int32_t *pn_locs, int32_t *pn_npks, int32_t *pn_x, int32_t n_min_distance);
     void sort_ascend(int32_t  *pn_x, int32_t n_size);
     void sort_indices_descend(  int32_t  *pn_x, int32_t *pn_indx, int32_t n_size);
-    unsigned long afe44xxRead (uint8_t address,const int pin);
+    unsigned long afe44xxRead (uint8_t address);
+
+    int _cs_pin;
+    int _pwdn_pin;
+    int _drdy_pin;
+    char intrrpt_num=0;
+
 };
 
 #endif

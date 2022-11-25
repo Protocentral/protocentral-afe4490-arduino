@@ -20,12 +20,12 @@
 
 
 #include <SPI.h>
-#include "Protocentral_AFE4490_Oximeter.h"
+#include "protocentral_afe44xx.h"
 
-const int SPISTE = 7; // chip select
-const int SPIDRDY = 2; // data ready pin
-const int PWDN =4;
-const int DRDY_INTNUM =0;   //digital pin2 interrupt num = 0. Please pass correct interrupt number if you are using any boards otherthan arduino uno
+#define AFE44XX_CS_PIN   7
+#define AFE44XX_DRDY_PIN 2
+#define AFE44XX_PWDN_PIN 4
+#define AFE44XX_INTNUM   0
 
 int datalen = 10;
 
@@ -33,7 +33,7 @@ volatile char DataPacket[10];
 volatile char DataPacketFooter[2]={0x00, CES_CMDIF_PKT_STOP};
 const char DataPacketHeader[6] = {CES_CMDIF_PKT_START_1, CES_CMDIF_PKT_START_2, datalen, ((uint8_t)(datalen >> 8)), CES_CMDIF_TYPE_DATA};
 
-AFE4490 afe4490;
+AFE44XX afe44xx(AFE44XX_CS_PIN, AFE44XX_PWDN_PIN, AFE44XX_DRDY_PIN, AFE44XX_INTNUM);
 
 void sendDataThroughUart(afe44xx_output_values * afe4490Data){
 
@@ -71,26 +71,26 @@ void sendDataThroughUart(afe44xx_output_values * afe4490Data){
 void setup()
 {
   Serial.begin(57600);
-  Serial.println("Intilaziting AFE44xx.. ");
+  Serial.println("Intialising AFE44xx.. ");
 
   delay(2000) ;   // pause for a moment
 
   SPI.begin();
-  SPI.setClockDivider (SPI_CLOCK_DIV8); // set Speed as 2MHz , 16MHz/ClockDiv
-  SPI.setDataMode (SPI_MODE0);          //Set SPI mode as 0
-  SPI.setBitOrder (MSBFIRST);           //MSB first
+  //SPI.setClockDivider (SPI_CLOCK_DIV8); // set Speed as 2MHz , 16MHz/ClockDiv
+  //SPI.setDataMode (SPI_MODE0);          //Set SPI mode as 0
+  //SPI.setBitOrder (MSBFIRST);           //MSB first
 
-  afe4490.afe44xxInit (SPISTE, SPIDRDY, DRDY_INTNUM, PWDN);
+  afe44xx.afe44xx_init();
   Serial.println("intilazition done");
 }
 
 void loop()
 {
-  afe44xx_output_values afe4490Data;
-  boolean sampled_value = afe4490.getDataIfAvailable(&afe4490Data,SPISTE);
+  afe44xx_output_values afe44xxData;
+  boolean sampled_value = afe44xx.getDataIfAvailable(&afe44xxData);
 
-  if (afe4490Data.calculated_value == true)
+  if (afe44xxData.calculated_value == true)
   {
-    sendDataThroughUart(&afe4490Data);
+    sendDataThroughUart(&afe44xxData);
   }
 }
