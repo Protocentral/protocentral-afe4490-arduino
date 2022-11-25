@@ -53,22 +53,24 @@ const uint8_t uch_spo2_table[184]={ 95, 95, 95, 96, 96, 96, 97, 97, 97, 97, 97, 
 
 spo2_algorithm Spo2;
 
-AFE44XX::AFE44XX(int cs_pin, int pwdn_pin, int drdy_pin)
+AFE44XX::AFE44XX(int cs_pin, int pwdn_pin)
 {
     _cs_pin=cs_pin;
-    _drdy_pin=drdy_pin;
+    
     _pwdn_pin=pwdn_pin;
 
     pinMode(_cs_pin, OUTPUT);
     digitalWrite(_cs_pin,HIGH);
 
     pinMode (_pwdn_pin,OUTPUT);
-    pinMode (_drdy_pin,INPUT);// data ready
+    
+    /*pinMode (_drdy_pin,INPUT);// data ready
 
     digitalWrite(_pwdn_pin, LOW);
     delay(500);
     digitalWrite(_pwdn_pin, HIGH);
     delay(500);
+    */
 }
 
 boolean AFE44XX::get_AFE44XX_Data(afe44xx_data *afe44xx_raw_data)

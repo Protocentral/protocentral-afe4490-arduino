@@ -22,7 +22,6 @@
 #include "protocentral_afe44xx.h"
 
 #define AFE44XX_CS_PIN   7
-#define AFE44XX_DRDY_PIN 2
 #define AFE44XX_PWDN_PIN 4
 #define AFE44XX_INTNUM   0
 
@@ -31,7 +30,7 @@
 #define CES_CMDIF_TYPE_DATA   0x02
 #define CES_CMDIF_PKT_STOP    0x0B
 
-AFE44XX afe44xx(AFE44XX_CS_PIN, AFE44XX_PWDN_PIN, AFE44XX_DRDY_PIN, AFE44XX_INTNUM);
+AFE44XX afe44xx(AFE44XX_CS_PIN, AFE44XX_PWDN_PIN);
 
 afe44xx_data afe44xx_raw_data;
 uint8_t ppg_data_buff[20];
@@ -52,14 +51,8 @@ void setup()
 {
   Serial.begin(57600);
   Serial.println("Intilaziting AFE44xx.. ");
-  delay(2000) ;   // pause for a moment
-
+  
   SPI.begin();
-
-  //SPI.setClockDivider (SPI_CLOCK_DIV8); // set Speed as 2MHz , 16MHz/ClockDiv
-  //SPI.setDataMode (SPI_MODE0);          //Set SPI mode as 0
-  //SPI.setBitOrder (MSBFIRST);           //MSB first
-
   afe44xx.afe44xx_init();
   Serial.println("Inited...");
 }

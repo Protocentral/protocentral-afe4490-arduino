@@ -33,7 +33,7 @@ typedef struct afe44xx_Record{
 class AFE44XX
 {
   public:
-    AFE44XX(int cs_pin, int pwdn_pin, int drdy_pin);
+    AFE44XX(int cs_pin, int pwdn_pin);
     void afe44xx_init();
     
     boolean get_AFE44XX_Data (afe44xx_data *afe44xx_raw_data);
