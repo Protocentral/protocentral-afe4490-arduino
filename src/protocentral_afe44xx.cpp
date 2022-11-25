@@ -53,7 +53,7 @@ const uint8_t uch_spo2_table[184]={ 95, 95, 95, 96, 96, 96, 97, 97, 97, 97, 97, 
 
 spo2_algorithm Spo2;
 
-AFE44XX::AFE44XX(int cs_pin, int pwdn_pin, int drdy_pin, int intr_num)
+AFE44XX::AFE44XX(int cs_pin, int pwdn_pin, int drdy_pin)
 {
     _cs_pin=cs_pin;
     _drdy_pin=drdy_pin;
@@ -169,7 +169,7 @@ void AFE44XX :: afe44xxWrite (uint8_t address, uint32_t data)
 unsigned long AFE44XX :: afe44xxRead (uint8_t address)
 {
   unsigned long data = 0;
-  
+
   SPI.beginTransaction(SPI_SETTINGS);
   digitalWrite (_cs_pin, LOW); // enable device
   SPI.transfer (address); // send address to device

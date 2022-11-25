@@ -22,6 +22,31 @@
 #include <string.h>
 #include <math.h>
 
+typedef struct afe44xx_Record{
+  int32_t heart_rate;
+  int32_t spo2;
+  signed long IR_data;
+  signed long RED_data;
+  boolean buffer_count_overflow = false;
+} afe44xx_data;
+
+class AFE44XX
+{
+  public:
+    AFE44XX(int cs_pin, int pwdn_pin, int drdy_pin);
+    void afe44xx_init();
+    
+    boolean get_AFE44XX_Data (afe44xx_data *afe44xx_raw_data);
+  
+  private:
+    void afe44xxWrite (uint8_t address,uint32_t data);
+    unsigned long afe44xxRead (uint8_t address);
+    
+    int _cs_pin;
+    int _pwdn_pin;
+    int _drdy_pin;
+};
+
 //afe44xx Register definition
 #define CONTROL0      0x00
 #define LED2STC       0x01
@@ -73,31 +98,5 @@
 #define LED2ABSVAL    0x2e
 #define LED1ABSVAL    0x2f
 #define DIAG          0x30
-
-typedef struct afe44xx_Record{
-  int32_t heart_rate;
-  int32_t spo2;
-  signed long IR_data;
-  signed long RED_data;
-  boolean buffer_count_overflow = false;
-} afe44xx_data;
-
-
-class AFE44XX
-{
-  public:
-    AFE44XX(int cs_pin, int pwdn_pin, int drdy_pin, int intr_num);
-    void afe44xx_init();
-    
-    boolean get_AFE44XX_Data (afe44xx_data *afe44xx_raw_data);
-  
-  private:
-    void afe44xxWrite (uint8_t address,uint32_t data);
-    unsigned long afe44xxRead (uint8_t address);
-    
-    int _cs_pin;
-    int _pwdn_pin;
-    int _drdy_pin;
-};
 
 #endif
