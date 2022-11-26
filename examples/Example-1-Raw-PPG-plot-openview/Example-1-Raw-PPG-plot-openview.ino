@@ -37,6 +37,7 @@ uint8_t ppg_data_buff[20];
 int16_t ppg_wave_ir;
 uint16_t ppg_stream_cnt = 0;
 uint8_t sp02;
+uint8_t heartrate;
 bool ppg_buf_ready = false;
 bool spo2_calc_done = false;
 
@@ -100,11 +101,15 @@ void loop()
       {
         DataPacket[8] = 0;
         sp02 = 0;
+        DataPacket[9] = 0;
+        heartrate = 0;
       }
       else
       {
         DataPacket[8] = afe44xx_raw_data.spo2;
         sp02 = (uint8_t)afe44xx_raw_data.spo2;
+        DataPacket[9] = afe44xx_raw_data.heart_rate;
+        heartrate = (uint8_t) afe44xx_raw_data.heart_rate;
         spo2_calc_done = true;
       }
 
