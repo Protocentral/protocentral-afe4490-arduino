@@ -21,9 +21,6 @@
 #define AFE44XX_SPI_SPEED 2000000
 SPISettings SPI_SETTINGS(AFE44XX_SPI_SPEED, MSBFIRST, SPI_MODE0); 
 
-static  int32_t an_x[ BUFFER_SIZE];
-static  int32_t an_y[ BUFFER_SIZE];
-
 volatile boolean afe44xx_data_ready = false;
 volatile int8_t n_buffer_count; //data length
 

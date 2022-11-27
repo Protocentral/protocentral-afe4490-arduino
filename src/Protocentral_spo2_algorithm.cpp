@@ -12,11 +12,12 @@ const uint8_t uch_spo2_table[184]={ 95, 95, 95, 96, 96, 96, 97, 97, 97, 97, 97, 
                                     28, 27, 26, 25, 23, 22, 21, 20, 19, 17, 16, 15, 14, 12, 11, 10, 9, 7, 6, 5,
                                     3,   2,  1  } ;
 
+static  int32_t an_x[ BUFFER_SIZE];
+static  int32_t an_y[ BUFFER_SIZE];
+
 void spo2_algorithm :: estimate_spo2(uint16_t *pun_ir_buffer, int32_t n_ir_buffer_length, uint16_t *pun_red_buffer, int32_t *pn_spo2, int8_t *pch_spo2_valid, int32_t *pn_heart_rate, int8_t *pch_hr_valid)
 {
-  static int32_t an_x[ BUFFER_SIZE];
-  static int32_t an_y[ BUFFER_SIZE];
-  
+ 
   uint32_t un_ir_mean;
   int32_t k, n_i_ratio_count;
   int32_t i, n_exact_ir_valley_locs_count, n_middle_idx;
