@@ -1,8 +1,8 @@
 #include "protocentral_afe44xx.h"
 #include "Protocentral_spo2_algorithm.h"
 
-int32_t an_x[ BUFFER_SIZE];
-int32_t an_y[ BUFFER_SIZE];
+static  int32_t an_x[ BUFFER_SIZE];
+static  int32_t an_y[ BUFFER_SIZE];
 
 const uint8_t uch_spo2_table[184]={ 95, 95, 95, 96, 96, 96, 97, 97, 97, 97, 97, 98, 98, 98, 98, 98, 99, 99, 99, 99,
                                     99, 99, 99, 99, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
@@ -27,7 +27,7 @@ void spo2_algorithm :: estimate_spo2(uint16_t *pun_ir_buffer, int32_t n_ir_buffe
   int32_t n_spo2_calc;
   int32_t n_y_dc_max, n_x_dc_max;
   int32_t n_y_dc_max_idx=0;
-  int32_t=n_x_dc_max_idx=0;
+  int32_t n_x_dc_max_idx=0;
   int32_t an_ratio[5], n_ratio_average;
   int32_t n_nume, n_denom ;
 
