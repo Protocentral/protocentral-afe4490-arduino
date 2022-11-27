@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////////////////
 //
-//    This example is for the new Open-Ox board.
+//    This example is only for the ProtoCentral OpenOx Board (coming soon)
 //
 //    This software is licensed under the MIT License(http://opensource.org/licenses/MIT).
 //
@@ -11,6 +11,7 @@
 //   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 //   For information on how to use, visit https://github.com/Protocentral/protocentral-afe4490-arduino
+//
 /////////////////////////////////////////////////////////////////////////////////////////
 
 
