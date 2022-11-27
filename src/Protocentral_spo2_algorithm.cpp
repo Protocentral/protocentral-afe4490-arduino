@@ -17,7 +17,7 @@ const uint8_t uch_spo2_table[184]={ 95, 95, 95, 96, 96, 96, 97, 97, 97, 97, 97, 
 
 void spo2_algorithm :: estimate_spo2(uint16_t *pun_ir_buffer, int32_t n_ir_buffer_length, uint16_t *pun_red_buffer, int32_t *pn_spo2, int8_t *pch_spo2_valid, int32_t *pn_heart_rate, int8_t *pch_hr_valid)
 {
-  uint32_t un_ir_mean,un_only_once ;
+  uint32_t un_ir_mean;
   int32_t k, n_i_ratio_count;
   int32_t i, s, m, n_exact_ir_valley_locs_count, n_middle_idx;
   int32_t n_th1, n_npks, n_c_min;
@@ -26,7 +26,7 @@ void spo2_algorithm :: estimate_spo2(uint16_t *pun_ir_buffer, int32_t n_ir_buffe
   int32_t n_y_ac, n_x_ac;
   int32_t n_spo2_calc;
   int32_t n_y_dc_max, n_x_dc_max;
-  int32_t n_y_dc_max_idx, n_x_dc_max_idx;
+  int32_t n_y_dc_max_idx, n_x_dc_max_idx=0;
   int32_t an_ratio[5], n_ratio_average;
   int32_t n_nume, n_denom ;
 
