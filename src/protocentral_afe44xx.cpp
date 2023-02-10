@@ -17,6 +17,7 @@
 
 #include "protocentral_afe44xx.h"
 #include "Protocentral_spo2_algorithm.h"
+#include "protocentral_hr_algorithm.h"
 
 #define AFE44XX_SPI_SPEED 2000000
 SPISettings SPI_SETTINGS(AFE44XX_SPI_SPEED, MSBFIRST, SPI_MODE0); 
@@ -49,6 +50,7 @@ const uint8_t uch_spo2_table[184]={ 95, 95, 95, 96, 96, 96, 97, 97, 97, 97, 97, 
                                     3,   2,  1  } ;
 
 spo2_algorithm Spo2;
+hr_algo hral;
 
 AFE44XX::AFE44XX(int cs_pin, int pwdn_pin)
 {
@@ -60,6 +62,8 @@ AFE44XX::AFE44XX(int cs_pin, int pwdn_pin)
     digitalWrite(_cs_pin,HIGH);
 
     pinMode (_pwdn_pin,OUTPUT);
+
+    hral.initStatHRM();
     
     /*pinMode (_drdy_pin,INPUT);// data ready
 
@@ -98,10 +102,13 @@ boolean AFE44XX::get_AFE44XX_Data(afe44xx_data *afe44xx_raw_data)
   {
     Spo2.estimate_spo2(aun_ir_buffer, 100, aun_red_buffer, &n_spo2, &ch_spo2_valid, &n_heart_rate, &ch_hr_valid);
     afe44xx_raw_data->spo2 = n_spo2;
-    afe44xx_raw_data->heart_rate = n_heart_rate;
+    //afe44xx_raw_data->heart_rate = n_heart_rate;
     n_buffer_count = 0;
     afe44xx_raw_data->buffer_count_overflow = true;
   }
+
+  hral.statHRMAlgo(afe44xx_raw_data->RED_data);
+  afe44xx_raw_data->heart_rate = hral.HeartRate;
 
   afe44xx_data_ready = false;
   return true;

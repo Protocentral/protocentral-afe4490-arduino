@@ -109,10 +109,13 @@ void loop()
         DataPacket[9] = afe44xx_raw_data.heart_rate;
         heartrate = (uint8_t) afe44xx_raw_data.heart_rate;
         spo2_calc_done = true;
+       // Serial.printf("O2: %d HR: %d",afe44xx_raw_data.spo2,afe44xx_raw_data.heart_rate);
       }
 
       
       afe44xx_raw_data.buffer_count_overflow = false;
     }
+
+   
     send_data_serial_port();
 }
