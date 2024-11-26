@@ -50,7 +50,7 @@ void setup()
   Serial.println("Intilaziting AFE44xx.. ");
   delay(2000) ;   // pause for a moment
 
-  SPI.begin();
+  SPI.beginTransaction(SPISettings());
 
   afe44xx.afe44xx_init();
   Serial.println("Inited...");
