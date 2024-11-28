@@ -30,9 +30,9 @@ Wiring the Breakout to your Arduino
 | CS0              | D7                   |  Slave select               |
 | START            | D5                   |  Conversion start Pin       |
 | PWDN             | D4                   |  Power Down/ Reset          |
-| DIAG_END         | NC                   |  Diagnostic output          |
-| LED_ALM          | NC                   |  Cable fault indicator      |
-| PD_ALM           | NC                   |  PD sensor fault indicator  |
+| DIAG_END         | -                   |  Diagnostic output          |
+| LED_ALM          | -                  |  Cable fault indicator      |
+| PD_ALM           | -                  |  PD sensor fault indicator  |
 | VCC              | +5v                  |  Supply voltage             |
 
 **NEW: This is now compatible with the [ProtoCentral OpenView](https://github.com/Protocentral/protocentral_openview) unified data visualization software.**
