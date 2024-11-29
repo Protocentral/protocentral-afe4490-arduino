@@ -42,13 +42,17 @@ Connections with the Arduino board is as follows:
 
 **NEW: This is now compatible with the [ProtoCentral OpenView 2](https://github.com/Protocentral/protocentral_openview2) unified data visualization software.**
 
-![streaming in openview](./assets/pulse_express_7sec.gif)
-
+![streaming in openview](./assets/AFE4490_openview.gif)
 
 
 For further details of the board, refer the documentation
 
-![Get it on SERVICE][(https://gist.github.com/cxmeel/0dbc95191f239b631c3874f4ccf114e2/raw/documentation.svg)](https://docs.protocentral.com/getting-started-with-AFE4490/)
+<center>
+
+[AFE4490 Breakout Board Documentation](https://docs.protocentral.com/getting-started-with-AFE4490/)
+
+ </center>
+
 
 
 ## For the main documentation site, GUI and more resources, please check out our main [GitHub Repo](https://github.com/Protocentral/AFE4490_Oximeter)
