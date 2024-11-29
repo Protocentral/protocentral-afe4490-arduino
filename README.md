@@ -40,16 +40,14 @@ Connections with the Arduino board is as follows:
 
 ![streaming in openview](./assets/AFE4490_openview.gif)
 
+For further details of the board, refer the documentation
 
 <center>
-
+ 
 [AFE4490 Breakout Board Documentation](https://docs.protocentral.com/getting-started-with-AFE4490/)
 
  </center>
 
-
-
-## For the main documentation site, GUI and more resources, please check out our main [GitHub Repo](https://github.com/Protocentral/AFE4490_Oximeter)
 
 License Information
 ===================
