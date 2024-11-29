@@ -2,7 +2,7 @@ ProtoCentral AF4490/AFE4400 based PPG/SpO2/HR shield for Arduino
 ================================
 [![Compile Examples](https://github.com/Protocentral/protocentral-afe4490-arduino/workflows/Compile%20Examples/badge.svg)](https://github.com/Protocentral/protocentral-afe4490-arduino/actions?workflow=Compile+Examples)
 
-## Don't have one? [Buy one here] (https://protocentral.com/product/protocentral-afe4490-pulse-oximeter-breakout-board-kit/)
+## Don't have one? [Buy one here](https://protocentral.com/product/protocentral-afe4490-pulse-oximeter-breakout-board-kit/)
 
 [![Oximeter](assets/AFE4490_Shield.jpg)  
 *AFE4490 Pulse Oximeter Shield Kit for Arduino ](https://protocentral.com/product/protocentral-afe4490-pulse-oximeter-shield-for-arduino-v2/)
@@ -48,7 +48,7 @@ Connections with the Arduino board is as follows:
 
 For further details of the board, refer the documentation
 
-[![Get it on SERVICE](https://gist.github.com/cxmeel/0dbc95191f239b631c3874f4ccf114e2/raw/documentation.svg)](https://docs.protocentral.com/getting-started-with-AFE4490/)
+![Get it on SERVICE][(https://gist.github.com/cxmeel/0dbc95191f239b631c3874f4ccf114e2/raw/documentation.svg)](https://docs.protocentral.com/getting-started-with-AFE4490/)
 
 
 ## For the main documentation site, GUI and more resources, please check out our main [GitHub Repo](https://github.com/Protocentral/AFE4490_Oximeter)
