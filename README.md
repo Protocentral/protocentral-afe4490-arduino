@@ -40,13 +40,9 @@ Connections with the Arduino board is as follows:
 
 ![streaming in openview](./assets/AFE4490_openview.gif)
 
-For further details of the board, refer the documentation
 
-<center>
- 
-[AFE4490 Breakout Board Documentation](https://docs.protocentral.com/getting-started-with-AFE4490/)
+ ## For further details, refer [the documentation on AFE4490 breakout board](https://docs.protocentral.com/getting-started-with-AFE4490/)
 
- </center>
 
 
 License Information
