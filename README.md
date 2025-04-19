@@ -1,24 +1,24 @@
-Protocentral AF4490/AFE4400 based PPG/SpO2/HR shield for Arduino
+ProtoCentral AF4490/AFE4400 based PPG/SpO2/HR shield for Arduino
 ================================
 [![Compile Examples](https://github.com/Protocentral/protocentral-afe4490-arduino/workflows/Compile%20Examples/badge.svg)](https://github.com/Protocentral/protocentral-afe4490-arduino/actions?workflow=Compile+Examples)
 
-## Don't have one? [Buy one here](https://protocentral.com/product/protocentral-afe4490-pulse-oximeter-breakout-board-kit/)
-
-[![Oximeter](assets/AFE4490_Shield.jpg)  
+[![Oximeter](https://i2.wp.com/protocentral.com/wp-content/uploads/2020/10/4953.jpg?fit=629%2C600&ssl=1)  
 *AFE4490 Pulse Oximeter Shield Kit for Arduino ](https://protocentral.com/product/protocentral-afe4490-pulse-oximeter-shield-for-arduino-v2/)
 
-![Oximeter](assets/AFE4490_Breakout.jpg)  
+[![Oximeter](https://i1.wp.com/protocentral.com/wp-content/uploads/2020/10/4949.jpg?fit=689%2C628&ssl=1)  
 
-Measuring SpO2 aka Specific Oxygen levels in blood has never been so easy! With the new AFE4490 IC our shield does an amazing job of measuring heart rate as well as SpO2 values. Pulse Oximetry is an indirect method of measuring the oxygen levels in the blood. The sensor measures the amount of red and IR light wavelengths absorbed by blood to calculate the oxygen levels in blood. The measurement is done by a probe that clips on to a finger and contains emitters as well as a light sensor.
+*Don't have it yet? Buy one here: protocentral-afe4490-pulse-oximeter-breakout-board-kit* ](https://protocentral.com/product/protocentral-afe4490-pulse-oximeter-breakout-board-kit/)
 
-For more information on how exactly Pulse Oximetry works, check this out, here.
+This is the Arduino library for the ProtoCentral afe4490  breakout/shield boards.
 
-Since the amount of blood flowing through any blood vessel varies (pulses) with the rate of blood from the heart, this can also be used for measuring heart rate without the need for connecting any ECG electrodes.
+Connecting the shield to your Arduino
+-------------------------------------
+ Connect the ECG/Respiration shield to the Arduino by stacking it on top of your Arduino. This shield uses the SPI interface  to communicate with the Arduino. Since this includes the ICSP header, which is used on newer Arduinos for SPI communication,  this shield is also compatible newer Arduino boards such as the Arduino Yun and Due.
 
 
-## Hardware Setup
-
-Connections with the Arduino board is as follows:
+Wiring the Breakout to your Arduino
+------------------------------------
+ If you have bought the breakout the connection with the Arduino board is as follows:
 
 |AFE4490 pin label| Arduino Connection   |Pin Function                  |
 |----------------- |:--------------------:|-----------------:           |
@@ -30,20 +30,22 @@ Connections with the Arduino board is as follows:
 | CS0              | D7                   |  Slave select               |
 | START            | D5                   |  Conversion start Pin       |
 | PWDN             | D4                   |  Power Down/ Reset          |
-| DIAG_END         | --                  |  Diagnostic output          |
-| LED_ALM          | --                |  Cable fault indicator      |
-| PD_ALM           | --                 |  PD sensor fault indicator  |
+| DIAG_END         | NC                   |  Diagnostic output          |
+| LED_ALM          | NC                   |  Cable fault indicator      |
+| PD_ALM           | NC                   |  PD sensor fault indicator  |
 | VCC              | +5v                  |  Supply voltage             |
 
-
-## Visualizing Output
-
-![streaming in openview](./assets/AFE4490_openview.gif)
+**NEW: This is now compatible with the [ProtoCentral OpenView](https://github.com/Protocentral/protocentral_openview) unified data visualization software.**
 
 
- ## For further details, refer [the documentation on AFE4490 breakout board](https://docs.protocentral.com/getting-started-with-AFE4490/)
+###  Running the Arduino Sketch
 
+Install the protoCentral afe4490 library from arduino library manager.
+If you have correctly installed the libraries, the example sketeches should now be available from within Arduino.
 
+Upload the code to your arduino and open [ProtoCentral-openview](https://github.com/Protocentral/protocentral_openview) GUI/Arduino plotter to view the output.
+
+## For the main documentation site, GUI and more resources, please check out our main [GitHub Repo](https://github.com/Protocentral/AFE4490_Oximeter)
 
 License Information
 ===================

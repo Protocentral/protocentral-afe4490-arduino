@@ -34,7 +34,7 @@ void setup()
   Serial.begin(57600);
   Serial.println("Intilaziting AFE44xx.. ");
   
-  SPI.beginTransaction(SPISettings());
+  SPI.begin();
   
   afe44xx.afe44xx_init();
   Serial.println("Inited...");

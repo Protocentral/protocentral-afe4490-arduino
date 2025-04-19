@@ -39,8 +39,10 @@ void spo2_algorithm ::estimate_spo2(uint16_t *pun_ir_buffer, int32_t n_ir_buffer
   {
     un_ir_mean += pun_ir_buffer[k];
   }
-
-  un_ir_mean = un_ir_mean / n_ir_buffer_length;
+  if (n_ir_buffer_length > 0)
+  {
+    un_ir_mean = un_ir_mean / n_ir_buffer_length;
+  }
 
   // remove DC and invert signal so that we can use peak detector as valley detector
   for (k = 0; k < n_ir_buffer_length; k++)
@@ -85,7 +87,6 @@ void spo2_algorithm ::estimate_spo2(uint16_t *pun_ir_buffer, int32_t n_ir_buffer
 
   if (n_npks >= 2)
   {
-
     for (k = 1; k < n_npks; k++)
     {
       n_peak_interval_sum += (an_ir_valley_locs[k] - an_ir_valley_locs[k - 1]);

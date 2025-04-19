@@ -148,7 +148,11 @@ void hr_algo::updateWindow(unsigned long *peakWindow, unsigned long Y, unsigned 
   {
     peakWindow[i]=peakWindow[(unsigned char)(i-1)];
   }
+  if(n>0)
+  {
+    
   peakWindow[0]=(Y/n);
+  }
 }
 
 
@@ -179,10 +183,13 @@ unsigned char hr_algo::chooseRate(unsigned char *rate)
   }
   
   if (nb>2)
+  {
     fullsum= (sum-max-min)*10/(nb-2);
-  else
+  }
+  else if(nb>0)
+  {
     fullsum= (sum)*10/(nb);
-  
+  }
   sum=fullsum/10;
   
   if (fullsum-sum*10 > 4)
