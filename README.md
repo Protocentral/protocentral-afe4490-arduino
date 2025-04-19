@@ -1,4 +1,4 @@
-ProtoCentral AF4490/AFE4400 based PPG/SpO2/HR shield for Arduino
+Protocentral AF4490/AFE4400 based PPG/SpO2/HR shield for Arduino
 ================================
 [![Compile Examples](https://github.com/Protocentral/protocentral-afe4490-arduino/workflows/Compile%20Examples/badge.svg)](https://github.com/Protocentral/protocentral-afe4490-arduino/actions?workflow=Compile+Examples)
 
@@ -13,7 +13,7 @@ This is the Arduino library for the ProtoCentral afe4490  breakout/shield boards
 
 Connecting the shield to your Arduino
 -------------------------------------
- Connect the ECG/Respiration shield to the Arduino by stacking it on top of your Arduino. This shield uses the SPI interface  to communicate with the Arduino. Since this includes the ICSP header, which is used on newer Arduinos for SPI communication,  this shield is also compatible newer Arduino boards such as the Arduino Yun and Due.
+Connect the ECG/Respiration shield to the Arduino by stacking it on top of your Arduino. This shield uses the SPI interface  to communicate with the Arduino. Since this includes the ICSP header, which is used on newer Arduinos for SPI communication,  this shield is also compatible newer Arduino boards such as the Arduino Yun and Due.
 
 
 Wiring the Breakout to your Arduino
