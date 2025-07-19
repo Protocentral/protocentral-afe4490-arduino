@@ -1,6 +1,9 @@
 //////////////////////////////////////////////////////////////////////////////////////////
 //
-//    Arduino library for the AFE44XX Pulse Oxiometer Shield
+//    Arduino library for the AFE44XX Pulse Oximeter and Heart Rate Sensor
+//    Supports AFE4490 and AFE4400 chips with full feature implementation
+//
+//    Copyright (c) 2018 ProtoCentral
 //
 //    This software is licensed under the MIT License(http://opensource.org/licenses/MIT).
 //
@@ -10,180 +13,701 @@
 //   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 //   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-//   For information on how to use, visit https://github.com/Protocentral/AFE44XX_Oximeter
+//   For information on how to use, visit https://github.com/Protocentral/protocentral-afe4490-arduino
 /////////////////////////////////////////////////////////////////////////////////////////
 
-
-
 #include "protocentral_afe44xx.h"
-#include "Protocentral_spo2_algorithm.h"
-#include "protocentral_hr_algorithm.h"
 
-#define AFE44XX_SPI_SPEED 2000000
-SPISettings SPI_SETTINGS(AFE44XX_SPI_SPEED, MSBFIRST, SPI_MODE0); 
+AFE44XX *AFE44XX::_instance = nullptr;
 
-volatile boolean afe44xx_data_ready = false;
-volatile int8_t n_buffer_count; //data length
-
-int dec=0;
-
-unsigned long IRtemp,REDtemp;
-
-int32_t n_spo2;  //SPO2 value
-int32_t n_heart_rate; //heart rate value
-
-uint16_t aun_ir_buffer[100]; //infrared LED sensor data
-uint16_t aun_red_buffer[100];  //red LED sensor data
-
-int8_t ch_spo2_valid;  //indicator to show if the SPO2 calculation is valid
-int8_t  ch_hr_valid;  //indicator to show if the heart rate calculation is valid
-
-const uint8_t uch_spo2_table[184]={ 95, 95, 95, 96, 96, 96, 97, 97, 97, 97, 97, 98, 98, 98, 98, 98, 99, 99, 99, 99,
-                                    99, 99, 99, 99, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
-                                   100, 100, 100, 100, 99, 99, 99, 99, 99, 99, 99, 99, 98, 98, 98, 98, 98, 98, 97, 97,
-                                    97, 97, 96, 96, 96, 96, 95, 95, 95, 94, 94, 94, 93, 93, 93, 92, 92, 92, 91, 91,
-                                    90, 90, 89, 89, 89, 88, 88, 87, 87, 86, 86, 85, 85, 84, 84, 83, 82, 82, 81, 81,
-                                    80, 80, 79, 78, 78, 77, 76, 76, 75, 74, 74, 73, 72, 72, 71, 70, 69, 69, 68, 67,
-                                    66, 66, 65, 64, 63, 62, 62, 61, 60, 59, 58, 57, 56, 56, 55, 54, 53, 52, 51, 50,
-                                    49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 31, 30, 29,
-                                    28, 27, 26, 25, 23, 22, 21, 20, 19, 17, 16, 15, 14, 12, 11, 10, 9, 7, 6, 5,
-                                    3,   2,  1  } ;
-
-spo2_algorithm Spo2;
-hr_algo hral;
-
-AFE44XX::AFE44XX(int cs_pin, int pwdn_pin)
+AFE44XX::AFE44XX(uint8_t csPin, uint8_t pwdnPin, uint8_t drdyPin)
+    : _csPin(csPin), _pwdnPin(pwdnPin), _drdyPin(drdyPin),
+      _lastError(AFE44xxError::NONE), _dataReady(false),
+      _spi(&SPI), _customSPI(false)
 {
-    _cs_pin=cs_pin;
-    
-    _pwdn_pin=pwdn_pin;
 
-    pinMode(_cs_pin, OUTPUT);
-    digitalWrite(_cs_pin,HIGH);
+  _instance = this;
 
-    pinMode (_pwdn_pin,OUTPUT);
+  pinMode(_csPin, OUTPUT);
+  digitalWrite(_csPin, HIGH);
 
-    hral.initStatHRM();
-    
-    /*pinMode (_drdy_pin,INPUT);// data ready
+  pinMode(_pwdnPin, OUTPUT);
+  digitalWrite(_pwdnPin, LOW);
 
-    digitalWrite(_pwdn_pin, LOW);
-    delay(500);
-    digitalWrite(_pwdn_pin, HIGH);
-    delay(500);
-    */
+  pinMode(_drdyPin, INPUT_PULLUP);
 }
 
-boolean AFE44XX::get_AFE44XX_Data(afe44xx_data *afe44xx_raw_data)
+AFE44XX::AFE44XX(uint8_t csPin, uint8_t pwdnPin, uint8_t drdyPin,
+                 const AFE44xxSPIConfig &spiConfig)
+    : _csPin(csPin), _pwdnPin(pwdnPin), _drdyPin(drdyPin),
+      _lastError(AFE44xxError::NONE), _dataReady(false),
+      _spi(spiConfig.spiInstance), _customSPI(true)
 {
-  afe44xxWrite(CONTROL0, 0x000001);
-  IRtemp = afe44xxRead(LED1VAL);
-  afe44xxWrite(CONTROL0, 0x000001);
-  REDtemp = afe44xxRead(LED2VAL);
-  afe44xx_data_ready = true;
-  IRtemp = (unsigned long) (IRtemp << 10);
-  afe44xx_raw_data->IR_data = (signed long) (IRtemp);
-  afe44xx_raw_data->IR_data = (signed long) ((afe44xx_raw_data->IR_data) >> 10);
-  REDtemp = (unsigned long) (REDtemp << 10);
-  afe44xx_raw_data->RED_data = (signed long) (REDtemp);
-  afe44xx_raw_data->RED_data = (signed long) ((afe44xx_raw_data->RED_data) >> 10);
 
-  if (dec == 20)
+  _instance = this;
+
+  pinMode(_csPin, OUTPUT);
+  digitalWrite(_csPin, HIGH);
+
+  pinMode(_pwdnPin, OUTPUT);
+  digitalWrite(_pwdnPin, LOW);
+
+  pinMode(_drdyPin, INPUT_PULLUP);
+
+  // Store SPI configuration
+  _config.spiConfig = spiConfig;
+}
+
+AFE44XX::AFE44XX(uint8_t csPin, uint8_t pwdnPin, uint8_t drdyPin,
+                 int8_t sckPin, int8_t misoPin, int8_t mosiPin,
+                 SPIClass *spiInstance)
+    : _csPin(csPin), _pwdnPin(pwdnPin), _drdyPin(drdyPin),
+      _lastError(AFE44xxError::NONE), _dataReady(false),
+      _spi(spiInstance ? spiInstance : &SPI), _customSPI(true)
+{
+
+  _instance = this;
+
+  pinMode(_csPin, OUTPUT);
+  digitalWrite(_csPin, HIGH);
+
+  pinMode(_pwdnPin, OUTPUT);
+  digitalWrite(_pwdnPin, LOW);
+
+  pinMode(_drdyPin, INPUT_PULLUP);
+
+  // Store SPI configuration
+  _config.spiConfig = AFE44xxSPIConfig(sckPin, misoPin, mosiPin, _spi);
+}
+
+AFE44XX::~AFE44XX()
+{
+  end();
+  _instance = nullptr;
+}
+
+AFE44xxError AFE44XX::begin(const AFE44xxConfig &config)
+{
+  _config = config;
+  _lastError = AFE44xxError::NONE;
+
+  digitalWrite(_pwdnPin, LOW);
+  delay(AFE44xxConstants::RESET_DELAY_MS);
+  digitalWrite(_pwdnPin, HIGH);
+  delay(AFE44xxConstants::RESET_DELAY_MS);
+
+  // Initialize SPI with custom pins if specified
+  if (_customSPI && _config.spiConfig.sckPin != -1)
   {
-    aun_ir_buffer[n_buffer_count] = (uint16_t) ((afe44xx_raw_data->IR_data) >> 4);
-    aun_red_buffer[n_buffer_count] = (uint16_t) ((afe44xx_raw_data->RED_data) >> 4);
-    n_buffer_count++;
-    dec = 0;
+#if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32S2) || defined(ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32C3) || defined(ESP32C3) || defined(ESP32)
+    _spi->begin(_config.spiConfig.sckPin, _config.spiConfig.misoPin,
+                _config.spiConfig.mosiPin);
+#elif defined(ESP8266)
+    _spi->begin();
+    // ESP8266 doesn't support pin remapping in SPI.begin(),
+    // pins must be configured before calling begin()
+#else
+    _spi->begin();
+#endif
+  }
+  else
+  {
+    _spi->begin();
   }
 
-  dec++;
-
-  if (n_buffer_count > 99)
+  AFE44xxError error = softReset();
+  if (error != AFE44xxError::NONE)
   {
-    Spo2.estimate_spo2(aun_ir_buffer, 100, aun_red_buffer, &n_spo2, &ch_spo2_valid, &n_heart_rate, &ch_hr_valid);
-    afe44xx_raw_data->spo2 = n_spo2;
-    //afe44xx_raw_data->heart_rate = n_heart_rate;
-    n_buffer_count = 0;
-    afe44xx_raw_data->buffer_count_overflow = true;
+    return (_lastError = error);
   }
 
-  hral.statHRMAlgo(afe44xx_raw_data->RED_data);
-  afe44xx_raw_data->heart_rate = hral.HeartRate;
+  error = verifyChipID();
+  if (error != AFE44xxError::NONE)
+  {
+    return (_lastError = error);
+  }
 
-  afe44xx_data_ready = false;
-  return true;
+  error = configureTiming();
+  if (error != AFE44xxError::NONE)
+  {
+    return (_lastError = error);
+  }
+
+  error = configureADC();
+  if (error != AFE44xxError::NONE)
+  {
+    return (_lastError = error);
+  }
+
+  error = configureLEDs();
+  if (error != AFE44xxError::NONE)
+  {
+    return (_lastError = error);
+  }
+
+  error = enableInterrupt();
+  if (error != AFE44xxError::NONE)
+  {
+    return (_lastError = error);
+  }
+
+  delay(AFE44xxConstants::INIT_DELAY_MS);
+
+  return AFE44xxError::NONE;
 }
 
-void AFE44XX::afe44xx_init()
+AFE44xxError AFE44XX::end()
 {
-  digitalWrite(_pwdn_pin, LOW);
-  delay(500);
-  digitalWrite(_pwdn_pin, HIGH);
-  delay(500);
-
-  afe44xxWrite(CONTROL0, 0x000000);
-  afe44xxWrite(CONTROL0, 0x000008);
-  afe44xxWrite(TIAGAIN, 0x000000); // CF = 5pF, RF = 500kR
-  afe44xxWrite(TIA_AMB_GAIN, 0x000001);
-  afe44xxWrite(LEDCNTRL, 0x001414);
-  afe44xxWrite(CONTROL2, 0x000000); // LED_RANGE=100mA, LED=50mA
-  afe44xxWrite(CONTROL1, 0x010707); // Timers ON, average 3 samples
-  afe44xxWrite(PRPCOUNT, 0X001F3F);
-  afe44xxWrite(LED2STC, 0X001770);
-  afe44xxWrite(LED2ENDC, 0X001F3E);
-  afe44xxWrite(LED2LEDSTC, 0X001770);
-  afe44xxWrite(LED2LEDENDC, 0X001F3F);
-  afe44xxWrite(ALED2STC, 0X000000);
-  afe44xxWrite(ALED2ENDC, 0X0007CE);
-  afe44xxWrite(LED2CONVST, 0X000002);
-  afe44xxWrite(LED2CONVEND, 0X0007CF);
-  afe44xxWrite(ALED2CONVST, 0X0007D2);
-  afe44xxWrite(ALED2CONVEND, 0X000F9F);
-  afe44xxWrite(LED1STC, 0X0007D0);
-  afe44xxWrite(LED1ENDC, 0X000F9E);
-  afe44xxWrite(LED1LEDSTC, 0X0007D0);
-  afe44xxWrite(LED1LEDENDC, 0X000F9F);
-  afe44xxWrite(ALED1STC, 0X000FA0);
-  afe44xxWrite(ALED1ENDC, 0X00176E);
-  afe44xxWrite(LED1CONVST, 0X000FA2);
-  afe44xxWrite(LED1CONVEND, 0X00176F);
-  afe44xxWrite(ALED1CONVST, 0X001772);
-  afe44xxWrite(ALED1CONVEND, 0X001F3F);
-  afe44xxWrite(ADCRSTCNT0, 0X000000);
-  afe44xxWrite(ADCRSTENDCT0, 0X000000);
-  afe44xxWrite(ADCRSTCNT1, 0X0007D0);
-  afe44xxWrite(ADCRSTENDCT1, 0X0007D0);
-  afe44xxWrite(ADCRSTCNT2, 0X000FA0);
-  afe44xxWrite(ADCRSTENDCT2, 0X000FA0);
-  afe44xxWrite(ADCRSTCNT3, 0X001770);
-  afe44xxWrite(ADCRSTENDCT3, 0X001770);
-  delay(1000);
+  detachInterrupt(digitalPinToInterrupt(_drdyPin));
+  return enablePowerDown(true);
 }
 
-void AFE44XX :: afe44xxWrite (uint8_t address, uint32_t data)
+AFE44xxError AFE44XX::readData(AFE44xxData &data)
 {
-  SPI.beginTransaction(SPI_SETTINGS);
-  digitalWrite (_cs_pin, LOW); // enable device
-  SPI.transfer (address); // send address to device
-  SPI.transfer ((data >> 16) & 0xFF); // write top 8 bits
-  SPI.transfer ((data >> 8) & 0xFF); // write middle 8 bits
-  SPI.transfer (data & 0xFF); // write bottom 8 bits
-  digitalWrite (_cs_pin, HIGH); // disable device
-  SPI.endTransaction();
+  if (!_dataReady)
+  {
+    data.dataValid = false;
+    return AFE44xxError::NONE;
+  }
+
+  uint32_t irValue, redValue;
+
+  AFE44xxError error = writeRegister(AFE44xxRegisters::CONTROL0, AFE44xxBits::CONTROL0_REG_READ);
+  if (error != AFE44xxError::NONE)
+  {
+    return (_lastError = error);
+  }
+
+  error = readRegister(AFE44xxRegisters::LED1VAL, irValue);
+  if (error != AFE44xxError::NONE)
+  {
+    return (_lastError = error);
+  }
+
+  error = writeRegister(AFE44xxRegisters::CONTROL0, AFE44xxBits::CONTROL0_REG_READ);
+  if (error != AFE44xxError::NONE)
+  {
+    return (_lastError = error);
+  }
+
+  error = readRegister(AFE44xxRegisters::LED2VAL, redValue);
+  if (error != AFE44xxError::NONE)
+  {
+    return (_lastError = error);
+  }
+
+  irValue = (irValue << 10) >> 10;
+  redValue = (redValue << 10) >> 10;
+
+  data.irData = static_cast<int32_t>(irValue);
+  data.redData = static_cast<int32_t>(redValue);
+  data.dataValid = true;
+  data.lastError = AFE44xxError::NONE;
+  data.timestamp = millis();
+
+  _dataReady = false;
+
+  return AFE44xxError::NONE;
 }
 
-unsigned long AFE44XX :: afe44xxRead (uint8_t address)
+AFE44xxError AFE44XX::setConfig(const AFE44xxConfig &config)
 {
-  unsigned long data = 0;
+  _config = config;
 
-  SPI.beginTransaction(SPI_SETTINGS);
-  digitalWrite (_cs_pin, LOW); // enable device
-  SPI.transfer (address); // send address to device
-  data |= ((unsigned long)SPI.transfer (0) << 16); // read top 8 bits data
-  data |= ((unsigned long)SPI.transfer (0) << 8); // read middle 8 bits  data
-  data |= SPI.transfer (0); // read bottom 8 bits data
-  digitalWrite (_cs_pin, HIGH); // disable device
-  SPI.endTransaction();
+  AFE44xxError error = configureLEDs();
+  if (error != AFE44xxError::NONE)
+  {
+    return (_lastError = error);
+  }
 
-  return data; // return with 24 bits of read data
+  error = configureADC();
+  if (error != AFE44xxError::NONE)
+  {
+    return (_lastError = error);
+  }
+
+  error = configureTiming();
+  if (error != AFE44xxError::NONE)
+  {
+    return (_lastError = error);
+  }
+
+  return AFE44xxError::NONE;
+}
+
+AFE44xxError AFE44XX::getConfig(AFE44xxConfig &config)
+{
+  config = _config;
+  return AFE44xxError::NONE;
+}
+
+AFE44xxError AFE44XX::setLEDCurrent(uint8_t ledNum, LEDCurrent current)
+{
+  if (ledNum < 1 || ledNum > 2)
+  {
+    return (_lastError = AFE44xxError::INVALID_PARAMETER);
+  }
+
+  if (ledNum == 1)
+  {
+    _config.led1Current = current;
+  }
+  else
+  {
+    _config.led2Current = current;
+  }
+
+  return configureLEDs();
+}
+
+AFE44xxError AFE44XX::setTIAGain(TIAGain gain)
+{
+  _config.tiaGain = gain;
+  return configureADC();
+}
+
+AFE44xxError AFE44XX::setSampleRate(SampleRate rate)
+{
+  _config.sampleRate = rate;
+  return configureTiming();
+}
+
+AFE44xxError AFE44XX::setAveraging(uint8_t factor)
+{
+  if (factor > 15)
+  {
+    return (_lastError = AFE44xxError::INVALID_PARAMETER);
+  }
+
+  _config.averagingFactor = factor;
+  return configureADC();
+}
+
+AFE44xxError AFE44XX::enablePowerDown(bool enable)
+{
+  _config.enablePowerDown = enable;
+
+  if (enable)
+  {
+    digitalWrite(_pwdnPin, LOW);
+  }
+  else
+  {
+    digitalWrite(_pwdnPin, HIGH);
+    delay(AFE44xxConstants::RESET_DELAY_MS);
+  }
+
+  return AFE44xxError::NONE;
+}
+
+AFE44xxError AFE44XX::softReset()
+{
+  AFE44xxError error = writeRegister(AFE44xxRegisters::CONTROL0, 0x000000);
+  if (error != AFE44xxError::NONE)
+  {
+    return error;
+  }
+
+  error = writeRegister(AFE44xxRegisters::CONTROL0, AFE44xxBits::CONTROL0_SW_RST);
+  if (error != AFE44xxError::NONE)
+  {
+    return error;
+  }
+
+  delay(AFE44xxConstants::RESET_DELAY_MS);
+
+  return AFE44xxError::NONE;
+}
+
+AFE44xxError AFE44XX::performSelfTest()
+{
+  AFE44xxDiagnostics diag;
+  AFE44xxError error = getDiagnostics(diag);
+
+  if (error != AFE44xxError::NONE)
+  {
+    return error;
+  }
+
+  if (diag.ledFault || diag.pdShort || diag.pdOpen || diag.gainError)
+  {
+    return AFE44xxError::LED_FAULT;
+  }
+
+  return AFE44xxError::NONE;
+}
+
+AFE44xxError AFE44XX::getDiagnostics(AFE44xxDiagnostics &diag)
+{
+  uint32_t diagValue;
+  AFE44xxError error = readRegister(AFE44xxRegisters::DIAG, diagValue);
+
+  if (error != AFE44xxError::NONE)
+  {
+    return error;
+  }
+
+  diag.ledFault = (diagValue & AFE44xxBits::DIAG_LED_ALM) != 0;
+  diag.pdShort = (diagValue & AFE44xxBits::DIAG_PD_ALM) != 0;
+  diag.pdOpen = (diagValue & 0x000400) != 0;
+  diag.gainError = (diagValue & 0x000800) != 0;
+  diag.ambientLight = static_cast<uint16_t>((diagValue >> 16) & 0xFFFF);
+  diag.temperature = 25.0f + ((diagValue & 0xFF) - 128) * 0.125f;
+
+  return AFE44xxError::NONE;
+}
+
+AFE44xxError AFE44XX::clearFaults()
+{
+  return writeRegister(AFE44xxRegisters::ALARM, 0x000000);
+}
+
+bool AFE44XX::isDataReady()
+{
+  return _dataReady;
+}
+
+const char *AFE44XX::getErrorString(AFE44xxError error)
+{
+  switch (error)
+  {
+  case AFE44xxError::NONE:
+    return "No error";
+  case AFE44xxError::SPI_ERROR:
+    return "SPI communication error";
+  case AFE44xxError::CHIP_NOT_RESPONDING:
+    return "Chip not responding";
+  case AFE44xxError::INVALID_PARAMETER:
+    return "Invalid parameter";
+  case AFE44xxError::BUFFER_OVERFLOW:
+    return "Buffer overflow";
+  case AFE44xxError::LED_FAULT:
+    return "LED fault detected";
+  case AFE44xxError::AMBIENT_LIGHT_HIGH:
+    return "Ambient light too high";
+  case AFE44xxError::POWER_DOWN_ERROR:
+    return "Power down error";
+  default:
+    return "Unknown error";
+  }
+}
+
+AFE44xxConfig AFE44XX::getDefaultConfig()
+{
+  AFE44xxConfig config;
+  config.chipType = AFE44xxChipType::AFE4490;
+  config.led1Current = LEDCurrent::CURRENT_50MA;
+  config.led2Current = LEDCurrent::CURRENT_50MA;
+  config.tiaGain = TIAGain::GAIN_500K;
+  config.sampleRate = SampleRate::RATE_500HZ;
+  config.averagingFactor = 3;
+  config.enableDiagnostics = true;
+  config.enablePowerDown = false;
+  config.spiConfig = AFE44xxSPIConfig(); // Use default SPI pins
+  return config;
+}
+
+AFE44xxConfig AFE44XX::getDefaultConfigWithSPI(const AFE44xxSPIConfig &spiConfig)
+{
+  AFE44xxConfig config = getDefaultConfig();
+  config.spiConfig = spiConfig;
+  return config;
+}
+
+AFE44xxConfig AFE44XX::getDefaultConfigWithSPI(int8_t sckPin, int8_t misoPin, int8_t mosiPin)
+{
+  AFE44xxConfig config = getDefaultConfig();
+  config.spiConfig = AFE44xxSPIConfig(sckPin, misoPin, mosiPin);
+  return config;
+}
+
+AFE44xxError AFE44XX::setSPIConfig(const AFE44xxSPIConfig &spiConfig)
+{
+  _config.spiConfig = spiConfig;
+  _spi = spiConfig.spiInstance;
+  _customSPI = true;
+
+// Reinitialize SPI with new configuration
+#if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32S2) || defined(ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32C3) || defined(ESP32C3) || defined(ESP32)
+  if (spiConfig.sckPin != -1)
+  {
+    _spi->begin(spiConfig.sckPin, spiConfig.misoPin, spiConfig.mosiPin);
+  }
+  else
+  {
+    _spi->begin();
+  }
+#else
+  _spi->begin();
+#endif
+
+  return AFE44xxError::NONE;
+}
+
+AFE44xxError AFE44XX::setSPIPins(int8_t sckPin, int8_t misoPin, int8_t mosiPin)
+{
+  return setSPIConfig(AFE44xxSPIConfig(sckPin, misoPin, mosiPin, _spi));
+}
+
+AFE44xxError AFE44XX::writeRegister(uint8_t address, uint32_t data)
+{
+  SPISettings spiSettings(AFE44xxConstants::SPI_SPEED, MSBFIRST, SPI_MODE0);
+
+  for (uint8_t retry = 0; retry < AFE44xxConstants::MAX_RETRIES; retry++)
+  {
+    _spi->beginTransaction(spiSettings);
+    digitalWrite(_csPin, LOW);
+
+    _spi->transfer(address);
+    _spi->transfer((data >> 16) & 0xFF);
+    _spi->transfer((data >> 8) & 0xFF);
+    _spi->transfer(data & 0xFF);
+
+    digitalWrite(_csPin, HIGH);
+    _spi->endTransaction();
+
+    delayMicroseconds(10);
+
+    uint32_t readback;
+    AFE44xxError error = readRegister(address, readback);
+
+    if (error == AFE44xxError::NONE && readback == data)
+    {
+      return AFE44xxError::NONE;
+    }
+
+    delayMicroseconds(100);
+  }
+
+  return AFE44xxError::SPI_ERROR;
+}
+
+AFE44xxError AFE44XX::readRegister(uint8_t address, uint32_t &data)
+{
+  SPISettings spiSettings(AFE44xxConstants::SPI_SPEED, MSBFIRST, SPI_MODE0);
+
+  for (uint8_t retry = 0; retry < AFE44xxConstants::MAX_RETRIES; retry++)
+  {
+    _spi->beginTransaction(spiSettings);
+    digitalWrite(_csPin, LOW);
+
+    _spi->transfer(address);
+    data = 0;
+    data |= static_cast<uint32_t>(_spi->transfer(0)) << 16;
+    data |= static_cast<uint32_t>(_spi->transfer(0)) << 8;
+    data |= _spi->transfer(0);
+
+    digitalWrite(_csPin, HIGH);
+    _spi->endTransaction();
+
+    if (data != 0xFFFFFF && data != 0x000000)
+    {
+      return AFE44xxError::NONE;
+    }
+
+    delayMicroseconds(100);
+  }
+
+  return AFE44xxError::SPI_ERROR;
+}
+
+AFE44xxError AFE44XX::verifyChipID()
+{
+  uint32_t expectedID = (_config.chipType == AFE44xxChipType::AFE4490) ? AFE44xxConstants::CHIP_ID_AFE4490 : AFE44xxConstants::CHIP_ID_AFE4400;
+
+  uint32_t actualID;
+  AFE44xxError error = readRegister(AFE44xxRegisters::SPARE1, actualID);
+
+  if (error != AFE44xxError::NONE)
+  {
+    return error;
+  }
+
+  if ((actualID & 0xFFFF) != expectedID)
+  {
+    return AFE44xxError::CHIP_NOT_RESPONDING;
+  }
+
+  return AFE44xxError::NONE;
+}
+
+AFE44xxError AFE44XX::configureTiming()
+{
+  uint32_t prpCount = 8000000 / static_cast<uint32_t>(_config.sampleRate) - 1;
+
+  AFE44xxError error = writeRegister(AFE44xxRegisters::PRPCOUNT, prpCount);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  uint32_t period = prpCount + 1;
+  uint32_t ledOnTime = period / 4;
+  uint32_t convTime = ledOnTime / 2;
+
+  error = writeRegister(AFE44xxRegisters::LED2STC, period * 0);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  error = writeRegister(AFE44xxRegisters::LED2ENDC, period * 0 + ledOnTime - 1);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  error = writeRegister(AFE44xxRegisters::LED2LEDSTC, period * 0);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  error = writeRegister(AFE44xxRegisters::LED2LEDENDC, period * 0 + ledOnTime);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  error = writeRegister(AFE44xxRegisters::ALED2STC, period * 0 + ledOnTime);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  error = writeRegister(AFE44xxRegisters::ALED2ENDC, period * 0 + ledOnTime * 2 - 1);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  error = writeRegister(AFE44xxRegisters::LED2CONVST, period * 0 + convTime);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  error = writeRegister(AFE44xxRegisters::LED2CONVEND, period * 0 + ledOnTime + convTime - 1);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  error = writeRegister(AFE44xxRegisters::ALED2CONVST, period * 0 + ledOnTime + convTime);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  error = writeRegister(AFE44xxRegisters::ALED2CONVEND, period * 0 + ledOnTime * 2 + convTime - 1);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  error = writeRegister(AFE44xxRegisters::LED1STC, period * 0 + ledOnTime * 2);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  error = writeRegister(AFE44xxRegisters::LED1ENDC, period * 0 + ledOnTime * 3 - 1);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  error = writeRegister(AFE44xxRegisters::LED1LEDSTC, period * 0 + ledOnTime * 2);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  error = writeRegister(AFE44xxRegisters::LED1LEDENDC, period * 0 + ledOnTime * 3);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  error = writeRegister(AFE44xxRegisters::ALED1STC, period * 0 + ledOnTime * 3);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  error = writeRegister(AFE44xxRegisters::ALED1ENDC, period - 1);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  error = writeRegister(AFE44xxRegisters::LED1CONVST, period * 0 + ledOnTime * 2 + convTime);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  error = writeRegister(AFE44xxRegisters::LED1CONVEND, period * 0 + ledOnTime * 3 + convTime - 1);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  error = writeRegister(AFE44xxRegisters::ALED1CONVST, period * 0 + ledOnTime * 3 + convTime);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  error = writeRegister(AFE44xxRegisters::ALED1CONVEND, period - 1);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  error = writeRegister(AFE44xxRegisters::ADCRSTCNT0, 0x000000);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  error = writeRegister(AFE44xxRegisters::ADCRSTENDCT0, 0x000000);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  error = writeRegister(AFE44xxRegisters::ADCRSTCNT1, period * 0 + ledOnTime * 2);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  error = writeRegister(AFE44xxRegisters::ADCRSTENDCT1, period * 0 + ledOnTime * 2);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  error = writeRegister(AFE44xxRegisters::ADCRSTCNT2, period * 0 + ledOnTime * 3);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  error = writeRegister(AFE44xxRegisters::ADCRSTENDCT2, period * 0 + ledOnTime * 3);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  error = writeRegister(AFE44xxRegisters::ADCRSTCNT3, period * 0);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  error = writeRegister(AFE44xxRegisters::ADCRSTENDCT3, period * 0);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  return AFE44xxError::NONE;
+}
+
+AFE44xxError AFE44XX::configureADC()
+{
+  uint32_t tiaGainValue = static_cast<uint32_t>(_config.tiaGain);
+  AFE44xxError error = writeRegister(AFE44xxRegisters::TIAGAIN, tiaGainValue);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  error = writeRegister(AFE44xxRegisters::TIA_AMB_GAIN, 0x000001);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  uint32_t control1 = AFE44xxBits::CONTROL1_TIMERS_EN |
+                      (static_cast<uint32_t>(_config.averagingFactor) & 0x0F);
+
+  error = writeRegister(AFE44xxRegisters::CONTROL1, control1);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  error = writeRegister(AFE44xxRegisters::CONTROL2, 0x000000);
+  if (error != AFE44xxError::NONE)
+    return error;
+
+  return AFE44xxError::NONE;
+}
+
+AFE44xxError AFE44XX::configureLEDs()
+{
+  uint32_t led1Current = static_cast<uint32_t>(_config.led1Current);
+  uint32_t led2Current = static_cast<uint32_t>(_config.led2Current);
+
+  uint32_t ledControl = (led2Current << 8) | led1Current;
+
+  return writeRegister(AFE44xxRegisters::LEDCNTRL, ledControl);
+}
+
+AFE44xxError AFE44XX::enableInterrupt()
+{
+  attachInterrupt(digitalPinToInterrupt(_drdyPin), dataReadyISR, FALLING);
+  return AFE44xxError::NONE;
+}
+
+void AFE44XX::dataReadyISR()
+{
+  if (_instance)
+  {
+    _instance->handleDataReady();
+  }
+}
+
+void AFE44XX::handleDataReady()
+{
+  _dataReady = true;
 }

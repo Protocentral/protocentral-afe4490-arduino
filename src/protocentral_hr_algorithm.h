@@ -34,6 +34,8 @@ class hr_algo
   void updateHeartRate(unsigned char *rate, unsigned int freq, unsigned int last);
   unsigned long findMax(unsigned long *X);
   unsigned long findMin(unsigned long *X);
+  unsigned char isLocalMaximum(unsigned long *buffer, unsigned char center, unsigned char range);
+  unsigned char isLocalMinimum(unsigned long *buffer, unsigned char center, unsigned char range);
 
   unsigned char HeartRate=0;
 };

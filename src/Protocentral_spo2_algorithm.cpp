@@ -12,11 +12,10 @@ const uint8_t uch_spo2_table[184] = {95, 95, 95, 96, 96, 96, 97, 97, 97, 97, 97,
                                      28, 27, 26, 25, 23, 22, 21, 20, 19, 17, 16, 15, 14, 12, 11, 10, 9, 7, 6, 5,
                                      3, 2, 1};
 
-static int32_t an_x[BUFFER_SIZE];
-static int32_t an_y[BUFFER_SIZE];
-
 void spo2_algorithm ::estimate_spo2(uint16_t *pun_ir_buffer, int32_t n_ir_buffer_length, uint16_t *pun_red_buffer, int32_t *pn_spo2, int8_t *pch_spo2_valid, int32_t *pn_heart_rate, int8_t *pch_hr_valid)
 {
+  int32_t an_x[BUFFER_SIZE];
+  int32_t an_y[BUFFER_SIZE];
 
   uint32_t un_ir_mean;
   int32_t k, n_i_ratio_count;
@@ -293,22 +292,40 @@ void spo2_algorithm ::sort_ascend(int32_t *pn_x, int32_t n_size)
 /**
   \brief        Sort array
   \par          Details
-                Sort array in ascending order (insertion sort algorithm)
+                Sort array in ascending order (optimized for small arrays)
 
   \retval       None
 */
 {
-  int32_t i, j, n_temp;
+  if (n_size <= 1)
+    return;
 
-  for (i = 1; i < n_size; i++)
+  if (n_size <= 8)
   {
-    n_temp = pn_x[i];
-
-    for (j = i; j > 0 && n_temp < pn_x[j - 1]; j--)
+    for (int32_t i = 1; i < n_size; i++)
     {
-      pn_x[j] = pn_x[j - 1];
+      int32_t key = pn_x[i];
+      int32_t j = i - 1;
+      while (j >= 0 && pn_x[j] > key)
+      {
+        pn_x[j + 1] = pn_x[j];
+        j--;
+      }
+      pn_x[j + 1] = key;
     }
-    pn_x[j] = n_temp;
+  }
+  else
+  {
+    int32_t i, j, n_temp;
+    for (i = 1; i < n_size; i++)
+    {
+      n_temp = pn_x[i];
+      for (j = i; j > 0 && n_temp < pn_x[j - 1]; j--)
+      {
+        pn_x[j] = pn_x[j - 1];
+      }
+      pn_x[j] = n_temp;
+    }
   }
 }
 
@@ -316,17 +333,18 @@ void spo2_algorithm ::sort_indices_descend(int32_t *pn_x, int32_t *pn_indx, int3
 /**
   \brief        Sort indices
   \par          Details
-                Sort indices according to descending order (insertion sort algorithm)
+                Sort indices according to descending order (optimized for small arrays)
 
   \retval       None
 */
 {
-  int32_t i, j, n_temp;
+  if (n_size <= 1)
+    return;
 
+  int32_t i, j, n_temp;
   for (i = 1; i < n_size; i++)
   {
     n_temp = pn_indx[i];
-
     for (j = i; j > 0 && pn_x[n_temp] > pn_x[pn_indx[j - 1]]; j--)
     {
       pn_indx[j] = pn_indx[j - 1];

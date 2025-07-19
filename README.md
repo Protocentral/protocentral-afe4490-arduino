@@ -36,6 +36,30 @@ If you have bought the breakout the connection with the Arduino board is as foll
 | PD_ALM           | NC                   |  PD sensor fault indicator  |
 | VCC              | +5v                  |  Supply voltage             |
 
+## New Features
+
+### Custom SPI Pin Support
+
+The library now supports custom SPI pins for different platforms (ESP32, ESP32-S3, ESP32-S2, ESP32-C3, ESP8266, STM32, etc.):
+
+```cpp
+// Use custom SPI pins
+AFE44XX afe44xx(csPin, pwdnPin, drdyPin, sckPin, misoPin, mosiPin);
+
+// Or configure after initialization
+afe44xx.setSPIPins(18, 19, 23);  // ESP32 example
+```
+
+**Platform Default Pins:**
+- **ESP32-S3**: SCK=12, MISO=13, MOSI=11
+- **ESP32-S2**: SCK=36, MISO=37, MOSI=35
+- **ESP32-C3**: SCK=6, MISO=5, MOSI=7
+- **ESP32**: SCK=18, MISO=19, MOSI=23
+- **ESP8266**: SCK=14, MISO=12, MOSI=13  
+- **Arduino**: SCK=13, MISO=12, MOSI=11
+
+See [Custom SPI Pins Documentation](docs/CUSTOM_SPI_PINS.md) for detailed usage examples.
+
 # Visualizing Output
 
 ![openview output](./assets/AFE4490_openview.gif)

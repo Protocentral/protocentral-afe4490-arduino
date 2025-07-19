@@ -50,7 +50,6 @@ void hr_algo::initStatHRM (void)
 
 void hr_algo::statHRMAlgo (unsigned long ppgData)
 {
-  unsigned char i;
   // moving average calculation
   movingWindowHP+= ppgData;
   
@@ -65,16 +64,9 @@ void hr_algo::statHRMAlgo (unsigned long ppgData)
     ispeak=0;
     if (lastPeak>smallest)
     {
-      // looking for a local maximum using the 20 point buffer
-      ispeak=1;
-      for (i=10;i>=1;i--)
-      {
-        if (peakWindowHP[10]<peakWindowHP[(unsigned int)(10-i)])
-          ispeak=0;
-        if (peakWindowHP[10]<peakWindowHP[(unsigned int)(10+i)])
-          ispeak=0;
-        
-      }
+      // looking for a local maximum using optimized peak detection
+      ispeak = isLocalMaximum(peakWindowHP, 10, 10);
+      
       if (ispeak==1)
       {
         // if we have a local maximum
@@ -95,15 +87,8 @@ void hr_algo::statHRMAlgo (unsigned long ppgData)
     
     if ((lastOnset>smallest)&&(ispeak==0))
     {
-      // looking for a local minimum using the 20 point buffer
-      ispeak=1;
-      for (i=10;i>=1;i--)
-      {
-        if (peakWindowHP[10]>peakWindowHP[(unsigned int)(10-i)])
-          ispeak=0;
-        if (peakWindowHP[10]>peakWindowHP[(unsigned int)(10+i)])
-          ispeak=0;
-      }
+      // looking for a local minimum using optimized detection
+      ispeak = isLocalMinimum(peakWindowHP, 10, 10);
       
       // if we have a local minimum
       if (ispeak==1)
@@ -236,4 +221,26 @@ unsigned long hr_algo::findMin (unsigned long *X)
       res=X[i];
   }
   return res;
+}
+
+unsigned char hr_algo::isLocalMaximum(unsigned long *buffer, unsigned char center, unsigned char range)
+{
+  unsigned long centerValue = buffer[center];
+  for (unsigned char i = 1; i <= range; i++) {
+    if (centerValue < buffer[center - i] || centerValue < buffer[center + i]) {
+      return 0;
+    }
+  }
+  return 1;
+}
+
+unsigned char hr_algo::isLocalMinimum(unsigned long *buffer, unsigned char center, unsigned char range)
+{
+  unsigned long centerValue = buffer[center];
+  for (unsigned char i = 1; i <= range; i++) {
+    if (centerValue > buffer[center - i] || centerValue > buffer[center + i]) {
+      return 0;
+    }
+  }
+  return 1;
 }
