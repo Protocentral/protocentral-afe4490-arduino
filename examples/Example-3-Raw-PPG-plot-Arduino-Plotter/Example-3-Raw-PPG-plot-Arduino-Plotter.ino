@@ -23,29 +23,46 @@
 
 #define AFE44XX_CS_PIN   7
 #define AFE44XX_PWDN_PIN 4
-#define AFE44XX_INTNUM   0
+#define AFE44XX_DRDY_PIN 2
 
-AFE44XX afe44xx(AFE44XX_CS_PIN, AFE44XX_PWDN_PIN);
+AFE44XX afe44xx(AFE44XX_CS_PIN, AFE44XX_PWDN_PIN, AFE44XX_DRDY_PIN);
 
-afe44xx_data afe44xx_raw_data;
+AFE44xxRawData afe44xx_raw_data;
+bool initialization_complete = false;
 
-void setup()
-{
+void setup() {
   Serial.begin(57600);
-  Serial.println("Intilaziting AFE44xx.. ");
+  Serial.println("Initializing AFE44xx...");
   
   SPI.begin();
   
-  afe44xx.afe44xx_init();
-  Serial.println("Inited...");
+  AFE44xxConfig config = AFE44XX::getDefaultConfig();
+  AFE44xxError init_result = afe44xx.begin(config);
+  
+  if (init_result == AFE44xxError::NONE) {
+    Serial.println("AFE44xx initialized successfully!");
+    initialization_complete = true;
+  } else {
+    Serial.print("AFE44xx initialization failed with error code: ");
+    Serial.println((int)init_result);
+    while(1) delay(1000);
+  }
 }
 
-void loop()
-{
-  afe44xx.get_AFE44XX_Data(&afe44xx_raw_data);
+void loop() {
+  if (!initialization_complete) {
+    delay(1000);
+    return;
+  }
+  
+  if (afe44xx.isDataReady()) {
+    AFE44xxError read_result = afe44xx.readRawData(afe44xx_raw_data);
     
-  Serial.println(afe44xx_raw_data.RED_data);  
-  // Serial.println(afe44xx_raw_data.IR_data);  
-  delay(8); 
-
+    if (read_result == AFE44xxError::NONE && afe44xx_raw_data.data_valid) {
+      Serial.println(afe44xx_raw_data.led2_value);
+      // Serial.println(afe44xx_raw_data.led1_value);
+    }
+  }
+  
+  delay(8);
 }
