@@ -22,9 +22,9 @@
 #include <SPI.h>
 #include "protocentral_afe44xx.h"
 
-#define AFE44XX_CS_PIN 10
-#define AFE44XX_PWDN_PIN 21
-#define AFE44XX_DRDY_PIN 14
+#define AFE44XX_CS_PIN   7
+#define AFE44XX_PWDN_PIN 4
+#define AFE44XX_DRDY_PIN 2
 
 #define CES_CMDIF_PKT_START_1 0x0A
 #define CES_CMDIF_PKT_START_2 0xFA
