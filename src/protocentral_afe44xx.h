@@ -21,6 +21,7 @@
 
 #include "Arduino.h"
 #include <SPI.h>
+#include "protocentral_afe44xx_uno_r3_compat.h"
 
 // AFE44xx Error Codes
 enum class AFE44xxError : uint8_t {
@@ -201,9 +202,9 @@ private:
   AFE44xxConfig _current_config;
   
   // Signal Processing Buffers
-  static const uint8_t BUFFER_SIZE = 100;
-  int32_t _ir_buffer[BUFFER_SIZE];
-  int32_t _red_buffer[BUFFER_SIZE];
+  static const uint8_t BUFFER_SIZE = AFE44XX_BUFFER_SIZE;
+  int32_t _ir_buffer[AFE44XX_BUFFER_SIZE];
+  int32_t _red_buffer[AFE44XX_BUFFER_SIZE];
   uint8_t _buffer_index;
   bool _buffer_full;
   
@@ -212,7 +213,7 @@ private:
   uint16_t _sample_interval_ms;
   
   // SPI Settings
-  static const uint32_t SPI_CLOCK_SPEED = 2000000;  // 2 MHz max per datasheet
+  static const uint32_t SPI_CLOCK_SPEED = AFE44XX_SPI_SPEED;  // Platform-specific clock speed
   static const uint8_t SPI_MODE = SPI_MODE0;         // CPOL=0, CPHA=0 per datasheet
 };
 

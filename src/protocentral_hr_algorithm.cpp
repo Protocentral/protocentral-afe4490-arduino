@@ -2,23 +2,47 @@
 //
 //    Optimized Heart Rate Algorithm for AFE4490/AFE4400
 //    Based on TI reference implementation with improvements
+//    Memory-optimized for Arduino Uno R3 compatibility
 //
 //    This software is licensed under the MIT License(http://opensource.org/licenses/MIT).
 //
 /////////////////////////////////////////////////////////////////////////////////////////
 
 #include "protocentral_hr_algorithm.h"
+#include "protocentral_afe44xx_uno_r3_compat.h"
 #include <string.h>  // For memset
+#ifndef DISABLE_DYNAMIC_ALLOCATION
 #include <stdlib.h>  // For malloc/free
+#endif
 
 using namespace HeartRateAlgorithm;
 
 // HeartRateDetector Implementation
-HeartRateDetector::HeartRateDetector() : initialized_(false), signal_buffer_(nullptr), rate_history_(nullptr) {
+#ifdef USE_STATIC_ALLOCATION
+// Static allocation for Arduino Uno R3
+static int32_t static_signal_buffer[AFE44XX_PPG_BUFFER_SIZE];
+static uint16_t static_rate_history[AFE44XX_RATE_HISTORY_SIZE];
+#endif
+
+HeartRateDetector::HeartRateDetector() : initialized_(false) {
+#ifdef USE_STATIC_ALLOCATION
+  signal_buffer_ = static_signal_buffer;
+  rate_history_ = static_rate_history;
+#else
+  signal_buffer_ = nullptr;
+  rate_history_ = nullptr;
+#endif
   config_ = getDefaultConfig();
 }
 
-HeartRateDetector::HeartRateDetector(const Config& config) : initialized_(false), signal_buffer_(nullptr), rate_history_(nullptr) {
+HeartRateDetector::HeartRateDetector(const Config& config) : initialized_(false) {
+#ifdef USE_STATIC_ALLOCATION
+  signal_buffer_ = static_signal_buffer;
+  rate_history_ = static_rate_history;
+#else
+  signal_buffer_ = nullptr;
+  rate_history_ = nullptr;
+#endif
   initialize(config);
 }
 
@@ -29,31 +53,55 @@ HeartRateAlgorithm::Config HeartRateDetector::getDefaultConfig() {
   config.min_peak_distance = 4;
   config.min_bpm = 40;
   config.max_bpm = 220;
-  config.rate_history_size = 8;
-  config.peak_window_size = 21;
+  config.rate_history_size = AFE44XX_RATE_HISTORY_SIZE;
+  config.peak_window_size = AFE44XX_PPG_BUFFER_SIZE;
   return config;
 }
 
 bool HeartRateDetector::initialize(const Config& config) {
   config_ = config;
   
-  // Allocate buffers
-  if (signal_buffer_) {
-    free(signal_buffer_);
+  // Validate buffer sizes for current platform
+  if (config_.peak_window_size > AFE44XX_PPG_BUFFER_SIZE) {
+    config_.peak_window_size = AFE44XX_PPG_BUFFER_SIZE;
   }
-  if (rate_history_) {
-    free(rate_history_);
+  if (config_.rate_history_size > AFE44XX_RATE_HISTORY_SIZE) {
+    config_.rate_history_size = AFE44XX_RATE_HISTORY_SIZE;
   }
   
-  signal_buffer_ = (int32_t*)malloc(config_.peak_window_size * sizeof(int32_t));
-  rate_history_ = (uint16_t*)malloc(config_.rate_history_size * sizeof(uint16_t));
-  
+#ifdef USE_STATIC_ALLOCATION
+  // Using static allocation - no malloc needed
+  DEBUG_PRINTLN("HR: Using static allocation");
   if (!signal_buffer_ || !rate_history_) {
+    DEBUG_PRINTLN("HR: Static buffers not available");
     return false;
   }
+#else
+  // Allocate buffers using malloc
+  DEBUG_PRINTLN("HR: Using dynamic allocation");
+  DEBUG_MEMORY_USAGE();
+  
+  if (signal_buffer_) {
+    SAFE_FREE(signal_buffer_);
+  }
+  if (rate_history_) {
+    SAFE_FREE(rate_history_);
+  }
+  
+  signal_buffer_ = (int32_t*)SAFE_MALLOC(config_.peak_window_size * sizeof(int32_t));
+  rate_history_ = (uint16_t*)SAFE_MALLOC(config_.rate_history_size * sizeof(uint16_t));
+  
+  if (!signal_buffer_ || !rate_history_) {
+    DEBUG_PRINTLN("HR: Memory allocation failed");
+    DEBUG_MEMORY_USAGE();
+    return false;
+  }
+#endif
   
   reset();
   initialized_ = true;
+  DEBUG_PRINTLN("HR: Initialization successful");
+  DEBUG_MEMORY_USAGE();
   return true;
 }
 

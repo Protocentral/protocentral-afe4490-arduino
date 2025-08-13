@@ -1,9 +1,8 @@
 //////////////////////////////////////////////////////////////////////////////////////////
 //
 //    Arduino library for the AFE4490/AFE4400 Pulse Oximeter Chips
-//    Datasheet-compliant implementation following TI specifications
 //
-//    Copyright (c) 2018 ProtoCentral
+//    Copyright (c) 2025 ProtoCentral
 //
 //    This software is licensed under the MIT License(http://opensource.org/licenses/MIT).
 //
@@ -25,6 +24,9 @@ AFE44XX::AFE44XX(uint8_t cs_pin, uint8_t pwdn_pin, uint8_t drdy_pin)
       _buffer_index(0), _buffer_full(false), _last_sample_time_ms(0),
       _sample_interval_ms(1000 / AFE44xx::DEFAULT_SAMPLE_RATE_HZ)
 {
+  // Debug memory usage at startup
+  DEBUG_MEMORY_USAGE();
+  
   // Initialize GPIO pins
   pinMode(_cs_pin, OUTPUT);
   digitalWrite(_cs_pin, HIGH);  // CS idle high
@@ -37,6 +39,12 @@ AFE44XX::AFE44XX(uint8_t cs_pin, uint8_t pwdn_pin, uint8_t drdy_pin)
   // Initialize buffers
   memset(_ir_buffer, 0, sizeof(_ir_buffer));
   memset(_red_buffer, 0, sizeof(_red_buffer));
+  
+  DEBUG_PRINT("AFE44XX: Buffer sizes - IR: ");
+  DEBUG_PRINT(sizeof(_ir_buffer));
+  DEBUG_PRINT(", Red: ");
+  DEBUG_PRINTLN(sizeof(_red_buffer));
+  DEBUG_MEMORY_USAGE();
 }
 
 // Initialize the AFE44xx with given configuration
@@ -45,8 +53,23 @@ AFE44xxError AFE44XX::begin(const AFE44xxConfig& config) {
     return AFE44xxError::NONE;  // Already initialized
   }
   
-  // Initialize SPI
+  DEBUG_PRINTLN("AFE44XX: Starting initialization...");
+  DEBUG_MEMORY_USAGE();
+  
+  // Check memory before proceeding
+#ifdef ARDUINO_UNO_R3_COMPAT
+  int freeMemory = getFreeMemory();
+  if (freeMemory < 300) {
+    DEBUG_PRINT("AFE44XX: Insufficient memory for initialization: ");
+    DEBUG_PRINTLN(freeMemory);
+    return AFE44xxError::INITIALIZATION_FAILED;
+  }
+#endif
+  
+  // Initialize SPI with platform-specific settings
   SPI.begin();
+  DEBUG_PRINT("AFE44XX: SPI clock speed: ");
+  DEBUG_PRINTLN(SPI_CLOCK_SPEED);
   
   // Power up sequence
   _last_error = powerUp();
@@ -121,6 +144,9 @@ AFE44xxError AFE44XX::begin(const AFE44xxConfig& config) {
   delay(AFE44xx::POWER_UP_DELAY_MS);
   
   _initialized = true;
+  DEBUG_PRINTLN("AFE44XX: Initialization completed successfully");
+  DEBUG_MEMORY_USAGE();
+  
   return AFE44xxError::NONE;
 }
 
@@ -258,7 +284,7 @@ AFE44xxError AFE44XX::readRawData(AFE44xxRawData& data) {
   _ir_buffer[_buffer_index] = data.led1_value - data.ambient1_value;
   _red_buffer[_buffer_index] = data.led2_value - data.ambient2_value;
   
-  _buffer_index = (_buffer_index + 1) % BUFFER_SIZE;
+  _buffer_index = (_buffer_index + 1) % AFE44XX_BUFFER_SIZE;
   if (_buffer_index == 0) {
     _buffer_full = true;
   }
@@ -281,33 +307,37 @@ AFE44xxError AFE44XX::readPPGData(AFE44xxPPGData& data) {
   }
   
   // Calculate AC and DC components if we have enough data
-  if (!_buffer_full) {
+  if (!_buffer_full && _buffer_index < (AFE44XX_BUFFER_SIZE / 2)) {
+    // For Uno R3, we need fewer samples to get started due to reduced buffer
     data.error_code = AFE44xxError::DATA_NOT_READY;
     data.data_valid = false;
     return AFE44xxError::DATA_NOT_READY;
   }
   
-  // Calculate DC components (average over buffer)
+  // Use available samples (may be less than full buffer on Uno R3)
+  uint8_t samples_to_use = _buffer_full ? AFE44XX_BUFFER_SIZE : _buffer_index;
+  
+  // Calculate DC components (average over available samples)
   int64_t ir_sum = 0, red_sum = 0;
-  for (uint8_t i = 0; i < BUFFER_SIZE; i++) {
+  for (uint8_t i = 0; i < samples_to_use; i++) {
     ir_sum += _ir_buffer[i];
     red_sum += _red_buffer[i];
   }
   
-  data.ir_dc = (float)ir_sum / BUFFER_SIZE;
-  data.red_dc = (float)red_sum / BUFFER_SIZE;
+  data.ir_dc = (float)ir_sum / samples_to_use;
+  data.red_dc = (float)red_sum / samples_to_use;
   
   // Calculate AC components (standard deviation approximation)
   float ir_variance = 0, red_variance = 0;
-  for (uint8_t i = 0; i < BUFFER_SIZE; i++) {
+  for (uint8_t i = 0; i < samples_to_use; i++) {
     float ir_diff = _ir_buffer[i] - data.ir_dc;
     float red_diff = _red_buffer[i] - data.red_dc;
     ir_variance += ir_diff * ir_diff;
     red_variance += red_diff * red_diff;
   }
   
-  data.ir_ac = sqrt(ir_variance / BUFFER_SIZE);
-  data.red_ac = sqrt(red_variance / BUFFER_SIZE);
+  data.ir_ac = sqrt(ir_variance / samples_to_use);
+  data.red_ac = sqrt(red_variance / samples_to_use);
   
   // Calculate ratio of ratios (R)
   if (data.ir_dc != 0 && data.red_dc != 0) {
@@ -693,21 +723,23 @@ void AFE44XX::updateSignalQuality(AFE44xxPPGData& data) {
 
 // Calculate heart rate from signal
 AFE44xxError AFE44XX::calculateHeartRate(const AFE44xxRawData& raw_data, AFE44xxPPGData& ppg_data) {
-  // Simple peak detection algorithm
+  // Simple peak detection algorithm optimized for reduced buffer sizes
   // For a full implementation, you would use more sophisticated algorithms
   // like autocorrelation or FFT-based methods
   
-  if (!_buffer_full) {
+  uint8_t samples_available = _buffer_full ? AFE44XX_BUFFER_SIZE : _buffer_index;
+  
+  if (samples_available < (AFE44XX_BUFFER_SIZE / 4)) {
     ppg_data.heart_rate_bpm = 0;
     return AFE44xxError::DATA_NOT_READY;
   }
   
-  // Count peaks in IR signal over the last buffer
+  // Count peaks in IR signal over the available buffer
   uint8_t peak_count = 0;
   int32_t threshold = (int32_t)ppg_data.ir_dc + (int32_t)(ppg_data.ir_ac * 0.3);
   bool above_threshold = false;
   
-  for (uint8_t i = 1; i < BUFFER_SIZE; i++) {
+  for (uint8_t i = 1; i < samples_available; i++) {
     if (_ir_buffer[i] > threshold && !above_threshold) {
       peak_count++;
       above_threshold = true;
@@ -717,7 +749,7 @@ AFE44xxError AFE44XX::calculateHeartRate(const AFE44xxRawData& raw_data, AFE44xx
   }
   
   // Calculate heart rate based on peaks and buffer time span
-  float buffer_time_minutes = (BUFFER_SIZE * _sample_interval_ms) / 60000.0;
+  float buffer_time_minutes = (samples_available * _sample_interval_ms) / 60000.0;
   ppg_data.heart_rate_bpm = (int32_t)(peak_count / buffer_time_minutes);
   
   // Sanity check for reasonable heart rate range
