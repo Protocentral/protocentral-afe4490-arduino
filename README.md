@@ -13,14 +13,6 @@ A comprehensive Arduino library for the Texas Instruments AFE4490 and AFE4400 an
 
 ## Features
 
-### ✨ **New Enhanced Features**
-- 🔧 **Custom SPI Pin Support** - Configure SPI pins for ESP32, ESP8266, STM32 platforms
-- 🌍 **Multi-Platform Support** - ESP32-S3, ESP32-S2, ESP32-C3, ESP8266, STM32, Arduino
-- 🛡️ **Robust Error Handling** - Comprehensive error detection and reporting
-- 📊 **Advanced Diagnostics** - Self-test capabilities and hardware monitoring
-- ⚙️ **Flexible Configuration** - Runtime configuration of all chip parameters
-- 🔄 **Modern C++ API** - Clean, type-safe interface with enum classes
-
 ### 📋 **Core Functionality**
 - Real-time PPG signal acquisition
 - SpO2 (blood oxygen saturation) calculation
@@ -488,19 +480,11 @@ We welcome contributions to improve this library! Please:
 
 ## Version History
 
-### v2.1.0 (Latest)
-- ✨ Added custom SPI pin support for all platforms
-- 🔧 Enhanced error handling and diagnostics
-- 🌍 Multi-platform support (ESP32 variants, ESP8266, STM32)
-- 📚 Comprehensive API documentation
-- 🧪 Self-test capabilities
-- 📊 Advanced configuration options
-
 ### v2.0.0
-- 🔄 Complete library rewrite with modern C++ API
-- 🛡️ Robust error handling
-- 🎯 Type-safe enumerations
-- 📈 Improved algorithm integration
+- Complete library rewrite with modern C++ API
+- Robust error handling
+- Type-safe enumerations
+- Improved algorithm integration
 
 ### v1.x
 - Basic AFE4490 support
