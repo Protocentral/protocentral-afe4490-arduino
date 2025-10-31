@@ -20,8 +20,8 @@
 
 // AFE44XX control pins
 #define AFE44XX_CS_PIN   10
-#define AFE44XX_PWDN_PIN 4
-#define AFE44XX_DRDY_PIN 5
+#define AFE44XX_PWDN_PIN 21
+#define AFE44XX_DRDY_PIN 14
 
 // ESP32-S3 specific SPI pin configurations
 // Configuration 1: Default ESP32-S3 SPI pins

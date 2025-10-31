@@ -23,29 +23,34 @@
 
 #define AFE44XX_CS_PIN   7
 #define AFE44XX_PWDN_PIN 4
-#define AFE44XX_INTNUM   0
 
 AFE44XX afe44xx(AFE44XX_CS_PIN, AFE44XX_PWDN_PIN);
-
-afe44xx_data afe44xx_raw_data;
 
 void setup()
 {
   Serial.begin(57600);
-  Serial.println("Intilaziting AFE44xx.. ");
-  
+  Serial.println("Initializing AFE44xx...");
+
   SPI.begin();
-  
-  afe44xx.afe44xx_init();
+
+  AFE44xxConfig cfg = AFE44XX::getDefaultConfig();
+  AFE44xxError err = afe44xx.begin(cfg);
+  if (err != AFE44xxError::NONE) {
+    Serial.print("Init failed: ");
+    Serial.println(afe44xx.getErrorString(err));
+    while (1) delay(1000);
+  }
+
   Serial.println("Inited...");
 }
 
 void loop()
 {
-  afe44xx.get_AFE44XX_Data(&afe44xx_raw_data);
-    
-  Serial.println(afe44xx_raw_data.RED_data);  
-  // Serial.println(afe44xx_raw_data.IR_data);  
-  delay(8); 
-
+  AFE44xxData data;
+  AFE44xxError err = afe44xx.readData(data);
+  if (err == AFE44xxError::NONE && data.dataValid) {
+    Serial.println(data.redData);
+    // Serial.println(data.irData);
+  }
+  delay(8);
 }

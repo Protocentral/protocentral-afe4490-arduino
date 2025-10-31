@@ -43,30 +43,26 @@ int8_t hrValid = 0;
 void setup() {
     Serial.begin(115200);
     while (!Serial) delay(10);
-    
-    Serial.println("AFE44XX SPO2 Computation Example");
-    Serial.println("================================");
-    
+
+    Serial.println("AFE44XX SPO2 Computation");
+
     AFE44xxConfig config = AFE44XX::getDefaultConfig();
     config.led1Current = LEDCurrent::CURRENT_50MA;
     config.led2Current = LEDCurrent::CURRENT_50MA;
     config.tiaGain = TIAGain::GAIN_500K;
     config.sampleRate = SampleRate::RATE_500HZ;
-    
-    Serial.println("Initializing AFE44XX...");
+
     AFE44xxError error = afe44xx.begin(config);
-    
     if (error != AFE44xxError::NONE) {
         Serial.print("Initialization failed: ");
         Serial.println(afe44xx.getErrorString(error));
         while (1) {
             delay(1000);
-            Serial.println("Please check connections and reset");
         }
     }
-    
+
     hrCalc.initStatHRM();
-    
+
     Serial.println("Place finger on sensor...");
     Serial.println("SPO2\tHR\tIR\tRed\tStatus");
 }
@@ -74,31 +70,32 @@ void setup() {
 void loop() {
     AFE44xxData data;
     AFE44xxError error = afe44xx.readData(data);
-    
+
     if (error != AFE44xxError::NONE) {
         Serial.print("Read error: ");
         Serial.println(afe44xx.getErrorString(error));
         delay(100);
         return;
     }
-    
+
     if (!data.dataValid) {
         return;
     }
-    
+
     decimationCounter++;
     if (decimationCounter >= DECIMATION_FACTOR) {
         irBuffer[bufferIndex] = (uint16_t)(data.irData >> 4);
         redBuffer[bufferIndex] = (uint16_t)(data.redData >> 4);
         bufferIndex = (bufferIndex + 1) % 100;
         decimationCounter = 0;
-        
+
         static uint8_t sampleCount = 0;
         sampleCount++;
         if (sampleCount >= 100) {
             spo2Calc.estimate_spo2(irBuffer, 100, redBuffer, &spo2, &spo2Valid, &heartRate, &hrValid);
             sampleCount = 0;
-        
+        }
+
         if (spo2Valid && hrValid) {
             Serial.print(spo2);
             Serial.print("%\t");
@@ -115,13 +112,13 @@ void loop() {
             Serial.print(data.redData);
             Serial.println("\tCalculating...");
         }
-        
+
         AFE44xxDiagnostics diag;
         error = afe44xx.getDiagnostics(diag);
         if (error == AFE44xxError::NONE && (diag.ledFault || diag.pdShort || diag.pdOpen)) {
             Serial.println("*** Sensor fault detected - check finger placement ***");
         }
     }
-    
+
     delay(2);
 }

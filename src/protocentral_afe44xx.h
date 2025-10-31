@@ -159,6 +159,8 @@ struct AFE44xxDiagnostics
   float temperature;
 };
 
+// (legacy compatibility types removed) Use AFE44xxData instead
+
 class AFE44XX
 {
 public:
@@ -196,6 +198,7 @@ public:
   AFE44xxError clearFaults();
 
   bool isDataReady();
+  // (legacy compatibility methods removed) Use begin() and readData() instead
   AFE44xxError getLastError() const { return _lastError; }
   const char *getErrorString(AFE44xxError error);
 
@@ -300,7 +303,7 @@ namespace AFE44xxConstants
 {
   constexpr uint32_t CHIP_ID_AFE4490 = 0x000490;
   constexpr uint32_t CHIP_ID_AFE4400 = 0x000400;
-  constexpr uint32_t SPI_SPEED = 2000000;
+  constexpr uint32_t SPI_SPEED = 1000000;
   constexpr uint8_t MAX_RETRIES = 3;
   constexpr uint16_t RESET_DELAY_MS = 100;
   constexpr uint16_t INIT_DELAY_MS = 1000;

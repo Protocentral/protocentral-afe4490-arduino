@@ -24,9 +24,9 @@
 #include "protocentral_afe44xx.h"
 
 // Standard pin definitions
-#define AFE44XX_CS_PIN 10
-#define AFE44XX_PWDN_PIN 2
-#define AFE44XX_DRDY_PIN 14
+#define AFE44XX_CS_PIN 7
+#define AFE44XX_PWDN_PIN 4
+#define AFE44XX_DRDY_PIN 2
 
 // Custom SPI pin definitions for different platforms
 #if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(ESP32S3)

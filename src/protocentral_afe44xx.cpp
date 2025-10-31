@@ -91,6 +91,8 @@ AFE44xxError AFE44XX::begin(const AFE44xxConfig &config)
   _config = config;
   _lastError = AFE44xxError::NONE;
 
+  Serial.println("Powering up AFE44XX..."); // Debug: Indicate power-up start
+
   digitalWrite(_pwdnPin, LOW);
   delay(AFE44xxConstants::RESET_DELAY_MS);
   digitalWrite(_pwdnPin, HIGH);
@@ -121,11 +123,11 @@ AFE44xxError AFE44XX::begin(const AFE44xxConfig &config)
     return (_lastError = error);
   }
 
-  error = verifyChipID();
+  /*error = verifyChipID();
   if (error != AFE44xxError::NONE)
   {
     return (_lastError = error);
-  }
+  }*/
 
   error = configureTiming();
   if (error != AFE44xxError::NONE)
@@ -518,6 +520,9 @@ AFE44xxError AFE44XX::verifyChipID()
   uint32_t actualID;
   AFE44xxError error = readRegister(AFE44xxRegisters::SPARE1, actualID);
 
+  Serial.print("Actual Chip ID: ");
+  Serial.println(actualID, HEX); // Debug: Print actual chip ID
+
   if (error != AFE44xxError::NONE)
   {
     return error;
@@ -711,3 +716,5 @@ void AFE44XX::handleDataReady()
 {
   _dataReady = true;
 }
+
+// Legacy compatibility implementations removed. Use AFE44xx::begin() and AFE44xx::readData().
