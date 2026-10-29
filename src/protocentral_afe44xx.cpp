@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright (c) 2016-2026 Ashwin Whitchurch, ProtoCentral Electronics
+// SPDX-FileCopyrightText: Copyright (c) 2018-2026 Ashwin Whitchurch, ProtoCentral Electronics
 //
 // Arduino driver for the TI AFE4490 and AFE4400 pulse-oximeter analog front ends.
 //

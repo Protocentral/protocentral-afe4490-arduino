@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright (c) 2016-2026 Ashwin Whitchurch, ProtoCentral Electronics
+// SPDX-FileCopyrightText: Copyright (c) 2018-2026 Ashwin Whitchurch, ProtoCentral Electronics
 //
 // 1.x compatibility API (AFE44XX), built on Protocentral_AFE44xx and AFE44xx_Algorithms.
 //

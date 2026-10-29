@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright (c) 2016-2026 Ashwin Whitchurch, ProtoCentral Electronics
+// SPDX-FileCopyrightText: Copyright (c) 2018-2026 Ashwin Whitchurch, ProtoCentral Electronics
 //
 // https://github.com/Protocentral/protocentral-afe4490-arduino
 

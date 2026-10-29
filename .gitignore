@@ -11,3 +11,6 @@ extras/host_test/host_test
 
 # Local bring-up sketches
 dev/
+
+# Local notes for Claude sessions
+CLAUDE.md
