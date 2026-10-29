@@ -5,8 +5,8 @@
 //
 // Input at any sample rate of at least 50 Hz is low-pass filtered and resampled to a
 // fixed 50 Hz design rate, so results do not depend on the PRF or on how often the
-// sketch calls in. Streaming beat detector on the IR channel, per-beat AC/DC ratio of
-// red and IR, median over 5 beats. Integer filters, ~150 bytes of RAM.
+// sketch calls in. Streaming beat detector on the IR channel; per beat, the red/IR AC
+// ratio is a least-squares fit over the whole beat; median over 5 beats. Integer filters, ~150 bytes of RAM.
 //
 // The SpO2 calibration curve must be validated against a reference oximeter for the
 // probe in use. For research and education only - not a medical device.
@@ -99,7 +99,9 @@ private:
     uint16_t _sinceBeat;           // samples since the last accepted peak
     int16_t  _lastFracQ8;
     bool     _haveBeat;
-    int32_t  _irMax, _irMin, _redMax, _redMin;  // smoothed AC extremes since the last peak
+    int32_t  _irMax, _irMin;       // smoothed IR AC extremes since the last peak (perfusion index)
+    uint16_t _beatN;               // samples since the last peak, and their sums for the red/IR fit
+    float    _sx, _sy, _sxx, _sxy;
 
     // Results
     uint16_t _intervals[5];        // beat intervals, samples x 256

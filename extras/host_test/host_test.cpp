@@ -4,8 +4,6 @@
 // These tests check the arithmetic and the logic. They do not replace validation against
 // a reference oximeter on real subjects.
 
-#include <stdlib.h>
-
 #include "SPI.h"
 #include "protocentral_afe44xx.h"
 
@@ -165,8 +163,12 @@ static double expectedSpo2(double r) {
     return AFE44XX_SPO2_A * r * r + AFE44XX_SPO2_B * r + AFE44XX_SPO2_C;
 }
 
+// Uniform noise in [-1, 1] from a fixed LCG, so every platform sees the same input
+// (rand() differs between libc implementations)
+static uint32_t noiseState = 1;
 static double noise() {
-    return ((double)rand() / RAND_MAX - 0.5) * 2.0;
+    noiseState = noiseState * 1664525UL + 1013904223UL;
+    return ((noiseState >> 8) / 16777215.0 - 0.5) * 2.0;
 }
 
 // Light reaching the photodiode: DC minus a pulse with a dicrotic wave, plus wander and noise
@@ -183,11 +185,21 @@ struct Ppg {
     }
 };
 
+// Tolerances: the synthetic noise is added per input sample, so at low PRF (few samples
+// averaged per 50 Hz output) single runs scatter by up to ~2.3 SpO2 points around an
+// unbiased mean. Each run must be within SPO2_TOL; the mean over a rate's runs must be
+// within SPO2_BIAS_TOL, which catches a systematic error.
+static const double SPO2_TOL      = 2.5;
+static const double SPO2_BIAS_TOL = 0.5;
+static const double HR_TOL        = 2.0;
+
 static void testAlgorithmsAtRate() {
     static const uint16_t rates[] = {63, 100, 125, 250, 333, 500, 625, 1000, 1200, 3000, 5000};
     static const double hrs[]     = {45, 75, 120, 180};
     static const double ratios[]  = {0.5, 0.8, 1.1};
     for (uint16_t rate : rates) {
+        double errSum = 0;
+        int    runs   = 0;
         for (double hr : hrs) {
             for (double r : ratios) {
                 Ppg ppg = {hr, r, 0.02, 0.03};
@@ -199,14 +211,17 @@ static void testAlgorithmsAtRate() {
                     algo.processSample(ir, red);
                 }
                 double want = expectedSpo2(r);
-                CHECK(algo.heartRateValid() && fabs(algo.heartRate() - hr) <= 2,
+                CHECK(algo.heartRateValid() && fabs(algo.heartRate() - hr) <= HR_TOL,
                       "%u Hz, %.0f bpm, R %.1f: HR %u (valid %d, quality 0x%02X)", rate, hr, r, algo.heartRate(),
                       algo.heartRateValid(), algo.signalQuality());
-                CHECK(algo.spo2Valid() && fabs(algo.spo2() - want) <= 1.5,
+                CHECK(algo.spo2Valid() && fabs(algo.spo2() - want) <= SPO2_TOL,
                       "%u Hz, %.0f bpm, R %.1f: SpO2 %u, want %.1f (ratio %u, valid %d, quality 0x%02X)", rate, hr, r,
                       algo.spo2(), want, algo.ratio(), algo.spo2Valid(), algo.signalQuality());
+                errSum += algo.spo2() - want;
+                runs++;
             }
         }
+        CHECK(fabs(errSum / runs) <= SPO2_BIAS_TOL, "%u Hz: mean SpO2 error %+.2f", rate, errSum / runs);
     }
 }
 
@@ -230,9 +245,9 @@ static void testAlgorithmsTimed() {
     static const double periods[] = {2000, 8000, 10000, 15000, 19000};
     for (double p : periods) {
         runTimed(p, p * 0.15, 72, 0.7, algo);
-        CHECK(algo.heartRateValid() && fabs(algo.heartRate() - 72) <= 2, "timed %.0f us: HR %u (quality 0x%02X)", p,
+        CHECK(algo.heartRateValid() && fabs(algo.heartRate() - 72) <= HR_TOL, "timed %.0f us: HR %u (quality 0x%02X)", p,
               algo.heartRate(), algo.signalQuality());
-        CHECK(algo.spo2Valid() && fabs(algo.spo2() - expectedSpo2(0.7)) <= 1.5, "timed %.0f us: SpO2 %u", p,
+        CHECK(algo.spo2Valid() && fabs(algo.spo2() - expectedSpo2(0.7)) <= SPO2_TOL, "timed %.0f us: SpO2 %u", p,
               algo.spo2());
     }
     runTimed(25000, 1000, 72, 0.7, algo);
@@ -276,7 +291,6 @@ static void testAlgorithmsInvalid() {
 }
 
 int main() {
-    srand(1);
     testTiming();
     testDriver();
     testAlgorithmsAtRate();

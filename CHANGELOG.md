@@ -38,13 +38,13 @@ Not released until SpO2 and heart rate are validated against a reference oximete
 - **Repo tooling:**
   - `keywords.txt` and `CHANGELOG.md`
   - Arduino Lint, and an 11-board compile workflow that includes ESP32-S3
-  - host tests (`extras/host_test`) and `scripts/build.sh`
+  - host tests (`extras/host_test`, deterministic noise; per-run and mean-error SpO2 checks) and `scripts/build.sh`
 
 ### Changed
 - **SpO2 and heart rate are rewritten**, because 1.x was only correct at one exact call rate:
   - every input is low-pass filtered and resampled to a fixed 50 Hz design rate, for any PRF, including non-integer ratios
   - the algorithms use the ambient-subtracted LED − ambient values
-  - a streaming beat detector on IR finds each beat; SpO2 comes from the AC/DC ratio of each beat, median over 5 beats
+  - a streaming beat detector on IR finds each beat; SpO2 comes from each beat's red/IR AC ratio, fitted by least squares over all of the beat's samples (much less noise-sensitive than peak-to-peak), median over 5 beats
   - results are reported invalid until 4 regular beats of good signal have been seen
   - the SpO2 curve is the 1.x one, now overridable with `AFE44XX_SPO2_A/B/C`
 - **Legacy `get_AFE44XX_Data()`** times its own calls with `micros()` and resamples from them, so 1.x sketches get correct SpO2 and heart rate at any call rate of at least 50 Hz. It sets `buffer_count_overflow` at every beat, and at least every 4 s.

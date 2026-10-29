@@ -39,7 +39,7 @@ A transimpedance amplifier converts the photodiode current to a voltage, and a 2
 The optional `AFE44xx_Algorithms` class turns the samples into SpO2 and heart rate:
 - it low-pass filters and resamples any input rate of at least 50 Hz to 50 Hz, so the results do not depend on the PRF
 - it detects each beat on the ambient-subtracted IR signal
-- it computes the red / IR ratio of every beat and takes the median over 5 beats
+- it computes the red / IR ratio of every beat as a least-squares fit over all of the beat's samples, then takes the median over 5 beats
 - it reports results as invalid until it has 4 regular beats of good signal
 
 The processing uses about 150 bytes of RAM.

@@ -71,10 +71,10 @@ void AFE44xx_Algorithms::clearBeats() {
 }
 
 void AFE44xx_Algorithms::clearExtremes() {
-    _irMax  = I32_MIN;
-    _irMin  = I32_MAX;
-    _redMax = I32_MIN;
-    _redMin = I32_MAX;
+    _irMax = I32_MIN;
+    _irMin = I32_MAX;
+    _beatN = 0;
+    _sx = _sy = _sxx = _sxy = 0.0f;
 }
 
 uint8_t AFE44xx_Algorithms::signalQuality() const {
@@ -204,8 +204,12 @@ bool AFE44xx_Algorithms::process50(int32_t ir, int32_t red) {
     // The current sample belongs to the beat that has just started
     if (acIr > _irMax) _irMax = acIr;
     if (acIr < _irMin) _irMin = acIr;
-    if (acRed > _redMax) _redMax = acRed;
-    if (acRed < _redMin) _redMin = acRed;
+    float x = (float)acIr, yr = (float)acRed;
+    _beatN++;
+    _sx += x;
+    _sy += yr;
+    _sxx += x * x;
+    _sxy += x * yr;
 
     _envelope -= _envelope / 128;  // forget old beats over ~2.5 s
 
@@ -230,10 +234,15 @@ bool AFE44xx_Algorithms::onPeak(int32_t dcIr, int32_t dcRed) {
         int32_t intervalQ8 = (int32_t)(_sinceBeat - 1) * 256 + fracQ8 - _lastFracQ8;
         if (intervalQ8 < MIN_INTERVAL_Q8) return false;  // too close: not a new beat
 
+        // AC_red / AC_ir is the least-squares slope of red against IR over every sample of
+        // the beat: far less noise-sensitive than comparing two peak-to-peak extremes
         int32_t ppIr  = _irMax - _irMin;
-        int32_t ppRed = _redMax - _redMin;
-        if (intervalQ8 <= MAX_INTERVAL_Q8 && ppIr > 0 && ppRed > 0 && dcIr > 0 && dcRed > 0) {
-            float r    = ((float)ppRed / (float)dcRed) / ((float)ppIr / (float)dcIr);
+        float   n     = (float)_beatN;
+        float   varIr = _sxx - _sx * _sx / n;
+        float   cov   = _sxy - _sx * _sy / n;
+        if (intervalQ8 <= MAX_INTERVAL_Q8 && _beatN > 2 && ppIr > 0 && varIr > 0.0f && cov > 0.0f && dcIr > 0 &&
+            dcRed > 0) {
+            float r    = (cov / varIr) * ((float)dcIr / (float)dcRed);
             float pi   = (float)ppIr * 10000.0f / (float)dcIr;
             _perfusion    = (uint16_t)constrain(pi, 0.0f, 65535.0f);
             _lowPerfusion = _perfusion < AFE44XX_ALGO_MIN_PI;
