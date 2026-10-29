@@ -1,1 +1,13 @@
-*.DS_Store
+# Editor / OS
+.vscode/
+.DS_Store
+*.swp
+*~
+
+# Build artifacts
+build/
+.pio/
+extras/host_test/host_test
+
+# Local bring-up sketches
+dev/
