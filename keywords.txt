@@ -1,0 +1,118 @@
+#######################################
+# Syntax Coloring Map for ProtoCentral AFE4490 / AFE4400
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+Protocentral_AFE44xx	KEYWORD1
+AFE44xx_Algorithms	KEYWORD1
+AFE44xx_Sample	KEYWORD1
+AFE44xx_Config	KEYWORD1
+AFE44xx_Diagnostics	KEYWORD1
+AFE44xx_Status	KEYWORD1
+AFE44xx_Chip	KEYWORD1
+AFE44xx_Led	KEYWORD1
+AFE44xx_TiaRf	KEYWORD1
+AFE44xx_TiaCf	KEYWORD1
+AFE44xx_Stage2Gain	KEYWORD1
+AFE44xx_LedRange	KEYWORD1
+AFE44xx_TxRef	KEYWORD1
+AFE44XX	KEYWORD1
+afe44xx_data	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+# Initialization
+begin	KEYWORD2
+end	KEYWORD2
+isConnected	KEYWORD2
+lastError	KEYWORD2
+config	KEYWORD2
+getLibraryVersion	KEYWORD2
+isSettled	KEYWORD2
+
+# Timing engine and power
+start	KEYWORD2
+stop	KEYWORD2
+standby	KEYWORD2
+wakeup	KEYWORD2
+isRunning	KEYWORD2
+setPRF	KEYWORD2
+getSampleRate	KEYWORD2
+setDutyCycle	KEYWORD2
+setAverages	KEYWORD2
+getAverages	KEYWORD2
+maxAverages	KEYWORD2
+computeTiming	KEYWORD2
+
+# Transmitter and receiver
+setLedCurrent	KEYWORD2
+getLedCurrent	KEYWORD2
+setLedRange	KEYWORD2
+setTxReference	KEYWORD2
+ledFullScaleMilliamps	KEYWORD2
+setReceiverGain	KEYWORD2
+setLed1ReceiverGain	KEYWORD2
+setAmbientDac	KEYWORD2
+setFilterCorner1kHz	KEYWORD2
+
+# Reading data
+available	KEYWORD2
+read	KEYWORD2
+readLatest	KEYWORD2
+enableDataReadyInterrupt	KEYWORD2
+disableDataReadyInterrupt	KEYWORD2
+missedSamples	KEYWORD2
+dataReadyPinFault	KEYWORD2
+ir	KEYWORD2
+red	KEYWORD2
+
+# Diagnostics and registers
+runDiagnostics	KEYWORD2
+readRegister	KEYWORD2
+writeRegister	KEYWORD2
+printRegisters	KEYWORD2
+
+# Algorithms
+reset	KEYWORD2
+processSample	KEYWORD2
+processSampleTimed	KEYWORD2
+heartRate	KEYWORD2
+heartRateValid	KEYWORD2
+spo2	KEYWORD2
+spo2Valid	KEYWORD2
+signalQuality	KEYWORD2
+perfusionIndex	KEYWORD2
+ratio	KEYWORD2
+filteredIr	KEYWORD2
+
+# 1.x API
+afe44xx_init	KEYWORD2
+get_AFE44XX_Data	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+AFE44XX_LIBRARY_VERSION	LITERAL1
+AFE44XX_SPI_CLOCK	LITERAL1
+AFE44XX_POWERUP_MS	LITERAL1
+AFE44XX_SETTLE_MS	LITERAL1
+AFE44XX_ADC_FULL_SCALE	LITERAL1
+AFE44XX_ALGO_RATE	LITERAL1
+AFE44XX_QUALITY_NO_SIGNAL	LITERAL1
+AFE44XX_QUALITY_SATURATED	LITERAL1
+AFE44XX_QUALITY_LOW_PERFUSION	LITERAL1
+AFE44XX_QUALITY_NO_PULSE	LITERAL1
+AFE44XX_QUALITY_RATE_TOO_LOW	LITERAL1
+AFE44XX_DIAG_PDOC	LITERAL1
+AFE44XX_DIAG_PDSC	LITERAL1
+AFE44XX_DIAG_LED1OPEN	LITERAL1
+AFE44XX_DIAG_LED2OPEN	LITERAL1
+AFE44XX_DIAG_LEDSC	LITERAL1
+AFE44XX_DIAG_LED_ALM	LITERAL1
+AFE44XX_DIAG_PD_ALM	LITERAL1
