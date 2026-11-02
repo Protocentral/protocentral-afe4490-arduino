@@ -17,7 +17,8 @@
 #include "protocentral_afe44xx.h"
 
 #if defined(ARDUINO_ARCH_ESP32)
-const int PIN_CS = 13, PIN_DRDY = 26, PIN_PWDN = 27, PIN_RESET = 14;
+//const int PIN_CS = 13, PIN_DRDY = 26, PIN_PWDN = 27, PIN_RESET = 14;
+const int PIN_CS = 10, PIN_DRDY = 14, PIN_PWDN = 21, PIN_RESET = 7;   // Sensything OX (ESP32-S3)
 #else
 const int PIN_CS = 7, PIN_DRDY = 2, PIN_PWDN = 4, PIN_RESET = 5;  // AFE4490 Shield / Breakout on an Uno
 #endif
