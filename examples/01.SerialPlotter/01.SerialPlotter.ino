@@ -4,8 +4,8 @@
 // 01.SerialPlotter
 //
 // Streams the IR and red PPG to the Arduino Serial Plotter (Tools > Serial Plotter,
-// 115200 baud). The AFE runs at 500 Hz; every 5 samples are averaged, so the plotter
-// gets 100 points per second. Put a finger in the probe to see the pulse.
+// 115200 baud). The AFE runs at 500 Hz; every 20 samples are averaged, so the plotter
+// gets 25 points per second. Put a finger in the probe to see the pulse.
 //
 // Wiring: see the README (Hardware Setup section). DRDY on D2 gives one read per sample.
 // For research and education only - not a medical device.
@@ -14,12 +14,13 @@
 #include "protocentral_afe44xx.h"
 
 #if defined(ARDUINO_ARCH_ESP32)
-const int PIN_CS = 13, PIN_DRDY = 26, PIN_PWDN = 27, PIN_RESET = 14;
+//const int PIN_CS = 13, PIN_DRDY = 26, PIN_PWDN = 27, PIN_RESET = 14;
+const int PIN_CS = 10, PIN_DRDY = 14, PIN_PWDN = 21, PIN_RESET = 7;   // Sensything OX (ESP32-S3)
 #else
 const int PIN_CS = 7, PIN_DRDY = 2, PIN_PWDN = 4, PIN_RESET = 5;  // AFE4490 Shield / Breakout on an Uno
 #endif
 
-const uint8_t AVERAGE = 5;  // 500 Hz -> 100 Hz
+const uint8_t AVERAGE = 20;  // 500 Hz -> 25 Hz
 
 Protocentral_AFE44xx afe(PIN_CS, PIN_DRDY, PIN_PWDN, PIN_RESET);
 
@@ -58,8 +59,8 @@ void loop() {
         irBaseline  = ir;
         redBaseline = red;
     }
-    irBaseline += (ir - irBaseline) / 64;
-    redBaseline += (red - redBaseline) / 64;
+    irBaseline += (ir - irBaseline) / 16; // ~0.6 s time constant at 25 Hz
+    redBaseline += (red - redBaseline) / 16;
 
     // Inverted so each heartbeat points up
     Serial.print(F("ir:"));
